@@ -1,0 +1,60 @@
+<p-toast></p-toast>
+<div class="container">
+    <div class="row margin-tp">
+        <div class="col-md-4 col-sm-6 ml-auto mr-auto">
+            <!-- contact support form -->
+            <div class="card card-body auth-form">
+                <p class="font-weight-normal title">Contacter le support</p>
+                <p class="subtitle" style="color:red">Si vous souhaitez pouvoir être recontacté par le support, merci de bien vouloir
+                    préciser votre email dans la description si ce dernier n'est pas renseigné par défaut</p>
+                <form [formGroup]="registerForm" (ngSubmit)="contactSupport()">
+
+                    <fieldset class="form-group">
+                        <label>Nom du ticket</label>
+                        <input type="text" placeholder="Nom" class="form-control" formControlName="name" required>
+                        <span
+                                *ngIf="!registerForm.controls.name.valid && registerForm.controls.name.errors['required'] && registerForm.controls.name.touched"
+                                class="help-block">Nom du ticket obligatoire</span>
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <label>Description du ticket</label>
+
+                        <textarea inputId="textarea" placeholder="Description" rows="5" cols="36"
+                                  formControlName="description" required></textarea>
+                        <span
+                                *ngIf="!registerForm.controls.description.valid && registerForm.controls.description.errors['required'] && registerForm.controls.description.touched"
+                                class="help-block">Description obligatoire</span>
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <label>Priorité</label>
+                        <br/>
+                        <p-autoComplete placeholder="Priorité" [suggestions]="filteredItems"
+                                        (completeMethod)="filterItems($event)" [dropdown]="true" forceSelection="true"
+                                        formControlName="priority" required>
+                        </p-autoComplete>
+                        <br/>
+                        <span
+                                *ngIf="!registerForm.controls.priority.valid && registerForm.controls.priority.errors['required'] && registerForm.controls.priority.touched"
+                                class="help-block">Priorité obligatoire</span>
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <label>E-mail</label>
+                        <input type="email" placeholder="Email" [(ngModel)]="creatorMail" class="form-control"
+                               formControlName="email" disabled>
+                        <span
+                                *ngIf="!registerForm.controls.email.valid && registerForm.controls.email.errors['email'] && !registerForm.controls.email.errors['required'] && registerForm.controls.email.touched"
+                                class="help-block">Veuillez entrer un email valide</span>
+                    </fieldset>
+
+                    <fieldset class="form-group">
+                        <button pButton type="submit" label="Envoyer mon ticket au support" class="p-button-secondary"
+                                [disabled]=!registerForm.valid></button>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

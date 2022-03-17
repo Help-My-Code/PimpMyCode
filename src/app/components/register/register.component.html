@@ -1,0 +1,71 @@
+<div class="container">
+  <div class="row margin-tp">
+    <div class="col-md-4 col-sm-6 ml-auto mr-auto">
+      <!-- register form -->
+      <div class="card card-body center auth-form">
+
+        <p class="font-weight-normal title">Inscription</p>
+        <form [formGroup]="registerForm" (ngSubmit)="register()">
+
+          <fieldset class="form-group">
+            <input type="email" placeholder="Email" class="form-control" formControlName="email" required>
+            <span
+              *ngIf="!registerForm.controls.email.valid && registerForm.controls.email.errors['required'] && registerForm.controls.email.touched"
+              class="help-block">Email obligatoire</span>
+            <span
+              *ngIf="!registerForm.controls.email.valid && registerForm.controls.email.errors['email'] && !registerForm.controls.email.errors['required'] && registerForm.controls.email.touched"
+              class="help-block">Veuillez entrer un email valide</span>
+          </fieldset>
+
+          <fieldset class="form-group">
+            <input type="text" placeholder="Nom" class="form-control" formControlName="fullName" required>
+            <span
+              *ngIf="!registerForm.controls.fullName.valid && registerForm.controls.fullName.errors['required'] && registerForm.controls.fullName.touched"
+              class="help-block">Nom obligatoire</span>
+          </fieldset>
+
+          <fieldset class="form-group">
+            <input type="text" placeholder="Prénom" class="form-control" formControlName="firstName" required>
+            <span
+              *ngIf="!registerForm.controls.firstName.valid && registerForm.controls.firstName.errors['required'] && registerForm.controls.firstName.touched"
+              class="help-block">Prénom obligatoire</span>
+          </fieldset>
+
+          <fieldset class="form-group">
+            <input type="password" placeholder="Mot de passe" class="form-control" formControlName="password"
+                   [(ngModel)]="userModel.password"
+                   (ngModelChange)="checkPasswordMatch($event)" required>
+            <span
+              *ngIf="!registerForm.controls.password.valid && registerForm.controls.password.errors['required'] && registerForm.controls.password.touched && !registerForm.controls.password.errors['minLength']"
+              class="help-block">Mot de passe obligatoire</span>
+            <span
+              *ngIf="!registerForm.controls.password.valid && registerForm.controls.password.errors['pattern'] && !registerForm.controls.password.errors['minlength']  && !registerForm.controls.password.errors['required']"
+              class="help-block">Veuillez entrer un mot de passe valide<br>
+                      <span class="help-block">
+                        Le mot de passe doit avoir au moins 8 caractères dont 1 lettre minuscule, 1 lettre majuscule, 1 caractère spécial, et 1 nombre.
+                      </span></span>
+          </fieldset>
+
+          <fieldset class="form-group">
+            <input type="password" placeholder="Confirmation de mot de passe" class="form-control"
+                   formControlName="confirmPassword" [(ngModel)]="userModel.confirmPassword"
+                   (ngModelChange)="checkConfirmPasswordMatch($event)" required>
+            <span
+              *ngIf="!registerForm.controls.confirmPassword.valid && registerForm.controls.confirmPassword.errors['required'] && registerForm.controls.confirmPassword.touched && !registerForm.controls.confirmPassword.errors['minlength'] "
+              class="help-block">Confirmation de mot de passe obligatoire</span>
+            <span class="help-block" *ngIf="!passwordMatched">Les mots de passe ne correspondent pas</span>
+          </fieldset>
+
+          <p class="subtitle">En vous inscrivant vous acceptez les <a href="FAIRE UNE PAGE CONDITION GENERALES">termes généraux</a></p>
+
+          <fieldset class="form-group">
+            <button pButton type="submit" label="S'inscrire" class="p-button-secondary" [disabled]=!registerForm.valid></button>
+          </fieldset>
+          <span (click)="loginCall()" class="link">Déjà inscrit ?</span>
+          <p>{{loading}}</p>
+          <p>{{message}}</p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
