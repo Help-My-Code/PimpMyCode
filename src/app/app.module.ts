@@ -18,6 +18,7 @@ import {ToastModule} from "primeng/toast";
 import {MessageService} from "primeng/api";
 import {AutoCompleteModule} from "primeng/autocomplete";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
+import { LiveCodingComponent } from './components/live-coding/live-coding.component';
 
 @NgModule({
     declarations: [
@@ -28,7 +29,8 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
         RegisterComponent,
         ForgotPasswordComponent,
         LogoutComponent,
-        ContactSupportComponent
+        ContactSupportComponent,
+        LiveCodingComponent
     ],
     imports: [
         BrowserModule,

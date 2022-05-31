@@ -1,10 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, FormControl, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {UserModel} from '../../models/user.model';
 import {Router} from '@angular/router';
 import {UserService} from '../../services/user.service';
 import {catchError} from "rxjs/operators";
-import {HttpErrorResponse} from "@angular/common/http";
 import {throwError} from "rxjs";
 import {getCurrentTokenWithoutQuotes} from "../../Utils/TokenUtils";
 import {UserType} from "../../../enum/user-type";
