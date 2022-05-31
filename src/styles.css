@@ -5,21 +5,22 @@
 .logo-div {
   float: left;
   background: url(assets/pimp-my-code-logo.png) no-repeat top;
-  background-size: 135px;
-  width: 128px;
-  height: 128px;
+  background-size: 100px;
+  width: 100px;
+  height: 100px;
   margin-right: 20px;
 }
 
-.jumbotron {
-  height: 71px;
+.header {
+  height: 98px;
+  padding-top: 30px;
   background-size: cover;
   border-radius: 0;
   margin-bottom: 0;
   background-color: #474545;
 }
 
-.jumbotron h1 {
+.header h1 {
   font-size: 2.5rem;
   color: #F5F5F5;
   font-weight: bold;
