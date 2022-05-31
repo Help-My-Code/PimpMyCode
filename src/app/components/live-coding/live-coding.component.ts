@@ -15,6 +15,9 @@ interface DropDownElement {
 
 export class LiveCodingComponent implements AfterViewInit {
 
+    private readonly MODE = 'MODE';
+    private readonly THEME = 'THEME';
+
     readonly languages: DropDownElement[];
     readonly themes: DropDownElement[];
 
@@ -69,8 +72,12 @@ export class LiveCodingComponent implements AfterViewInit {
             {name: 'Vibrant Ink', code: 'vibrant_ink'},
             {name: 'Xcode', code: 'xcode'},
         ];
-        this.selectedLanguage = this.languages[0];
-        this.selectedTheme = this.themes[0];
+        this.selectedLanguage = this.languages.find(language => {
+            return language.code === localStorage.getItem(this.MODE);
+        });
+        this.selectedTheme = this.themes.find(theme => {
+            return theme.code === localStorage.getItem(this.THEME);
+        });
     }
 
     @ViewChild("editor") private editor: ElementRef<HTMLElement>;
@@ -83,19 +90,28 @@ export class LiveCodingComponent implements AfterViewInit {
         );
         this.aceEditor = ace.edit(this.editor.nativeElement)
         this.aceEditor.session.setValue("print('Hello world !');");
-        //TODO localstorage
-        this.aceEditor.setTheme("ace/theme/" + this.selectedTheme.code);
-        this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
+        if (localStorage.getItem(this.THEME)) {
+            this.aceEditor.setTheme("ace/theme/" + localStorage.getItem(this.THEME));
+        } else {
+            this.aceEditor.setTheme("ace/theme/" + this.selectedTheme.code);
+        }
+        if (localStorage.getItem(this.MODE)) {
+            this.aceEditor.session.setMode("ace/mode/" + localStorage.getItem(this.MODE));
+        } else {
+            this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
+        }
         this.aceEditor.on("change", () => {
             console.log(this.aceEditor.getValue());
         });
     }
 
     setAceMode() {
+        localStorage.setItem(this.MODE, this.selectedLanguage.code);
         this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
     }
 
     setAceTheme() {
+        localStorage.setItem(this.THEME, this.selectedTheme.code);
         this.aceEditor.setTheme("ace/theme/" + this.selectedTheme.code);
     }
 
