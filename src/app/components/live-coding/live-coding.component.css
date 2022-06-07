@@ -1,8 +1,17 @@
 .app-ace-editor {
     border: 2px solid #f8f9fa;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-    width: 100%;
+    width: 60%;
     height: 500px;
+    float: left;
+}
+
+.app-ace-result {
+    border: 2px solid #f8f9fa;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    width: 40%;
+    height: 500px;
+    float: right;
 }
 
 .run-button {

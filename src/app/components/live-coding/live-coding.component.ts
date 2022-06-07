@@ -1,6 +1,10 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import * as ace from "ace-builds";
 import {Ace} from "ace-builds";
+import {catchError} from "rxjs/operators";
+import {throwError} from "rxjs";
+import {UserService} from "../../services/user.service";
+import {ExecuteProgramService} from "../../services/execute-program.service";
 
 interface DropDownElement {
     name: string,
@@ -26,7 +30,12 @@ export class LiveCodingComponent implements AfterViewInit {
 
     private aceEditor: Ace.Editor;
 
-    constructor() {
+    message: any;
+    loading = "";
+
+    codeResult = "";
+
+    constructor(private executeProgramService: ExecuteProgramService,) {
         this.languages = [
             {name: 'Dart', code: 'dart'},
             {name: 'Python', code: 'python'},
@@ -89,7 +98,12 @@ export class LiveCodingComponent implements AfterViewInit {
             "https://unpkg.com/ace-builds@1.4.12/src-noconflict"
         );
         this.aceEditor = ace.edit(this.editor.nativeElement)
-        this.aceEditor.session.setValue("print('Hello world !');");
+        this.aceEditor.session.setValue("void main() {\n" +
+            "    print('Hello world !');\n" +
+            "    for(int i = 0 ; i < 10 ; i += 1) {\n" +
+            "      print(i);\n" +
+            "    }\n" +
+            "}");
         if (localStorage.getItem(this.THEME)) {
             this.aceEditor.setTheme("ace/theme/" + localStorage.getItem(this.THEME));
         } else {
@@ -121,6 +135,29 @@ export class LiveCodingComponent implements AfterViewInit {
     }
 
     runCode() {
-        // TODO execute code
+        this.codeResult = "";
+        this.message = "";
+        this.loading = "Code en cours d'exécution...";
+        this.executeProgramService.execute(this.selectedLanguage.code.toUpperCase(), this.aceEditor.getValue())
+            .pipe(catchError(err => {
+                if (err.status) {
+                    this.loading = "";
+                    this.message = err.statusText;
+                }
+                return throwError(err);
+            }))
+            .subscribe((result) => {
+                this.loading = "";
+                const returnedData: any = result;
+                const jsondata = JSON.parse(returnedData._body);
+                if (!returnedData.ok) {
+                    this.message = returnedData.statusText;
+                    return;
+                } else if (jsondata.stdout) {
+                    this.codeResult = jsondata.stdout;
+                } else {
+                    this.message = "An error has occurred";
+                }
+            });
     }
 }
