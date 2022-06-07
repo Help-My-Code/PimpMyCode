@@ -6,9 +6,11 @@ import { RegisterComponent } from './components/register/register.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import {LogoutComponent} from "./components/logout/logout.component";
 import {ContactSupportComponent} from "./components/contact-support/contact-support.component";
+import {LiveCodingComponent} from "./components/live-coding/live-coding.component";
 
 const routes: Routes = [
-  { path: '', component: AuthenticationComponent },
+  { path: '', component: LiveCodingComponent },
+  { path: 'auth', component: AuthenticationComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'logout', component: LogoutComponent },

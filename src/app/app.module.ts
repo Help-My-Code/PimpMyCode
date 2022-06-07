@@ -4,7 +4,7 @@ import {AuthenticationComponent} from './components/authentication/authenticatio
 import {AppRoutingModule} from './app-routing.module';
 import {HttpClient, HttpClientModule} from '@angular/common/http';
 import {HttpModule} from '@angular/http';
-import {ReactiveFormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {HeaderComponent} from './components/header/header.component';
 import {FooterComponent} from './components/footer/footer.component';
 import {RegisterComponent} from './components/register/register.component';
@@ -18,6 +18,9 @@ import {ToastModule} from "primeng/toast";
 import {MessageService} from "primeng/api";
 import {AutoCompleteModule} from "primeng/autocomplete";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
+import { LiveCodingComponent } from './components/live-coding/live-coding.component';
+import {DropdownModule} from "primeng/dropdown";
+import {RippleModule} from "primeng/ripple";
 
 @NgModule({
     declarations: [
@@ -28,7 +31,8 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
         RegisterComponent,
         ForgotPasswordComponent,
         LogoutComponent,
-        ContactSupportComponent
+        ContactSupportComponent,
+        LiveCodingComponent
     ],
     imports: [
         BrowserModule,
@@ -40,7 +44,10 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
         NgxLoadingModule.forRoot({}),
         ButtonModule,
         ToastModule,
-        AutoCompleteModule
+        AutoCompleteModule,
+        DropdownModule,
+        FormsModule,
+        RippleModule
     ],
     providers: [
         HttpClient,
