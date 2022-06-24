@@ -6,8 +6,8 @@ import {throwError} from "rxjs";
 import {ExecuteProgramService} from "../../services/execute-program.service";
 import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
 import {MessageService} from "primeng/api";
-import {Comment} from "../../models/comment.model";
 import {CommentListComponent} from "../comment-list/comment-list.component";
+import jwt_decode from 'jwt-decode';
 
 interface DropDownElement {
     name: string,
@@ -38,16 +38,33 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
 
     codeResult = "";
 
+    contentId = null;
+    token = null;
+    userId = null;
+
     ref: DynamicDialogRef;
 
     constructor(private executeProgramService: ExecuteProgramService,
                 public dialogService: DialogService,
                 private messageService: MessageService) {
+
+        const urlParams = new URLSearchParams(window.location.search);
+        this.token = urlParams.get('token');
+        try {
+            const decoded = jwt_decode(this.token);
+            this.userId = decoded['userId'];
+        } catch (e) {
+            console.log(e);
+        }
+
+        this.contentId = urlParams.get('content');
+
         this.languages = [
             {name: 'Dart', code: 'dart'},
             {name: 'Python', code: 'python'},
             {name: 'C', code: 'ccpp'}
         ];
+
         this.themes = [
             {name: 'Ambiance', code: 'ambiance'},
             {name: 'Chaos', code: 'chaos'},
@@ -88,9 +105,11 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
             {name: 'Vibrant Ink', code: 'vibrant_ink'},
             {name: 'Xcode', code: 'xcode'},
         ];
+
         this.selectedLanguage = this.languages.find(language => {
             return language.code === localStorage.getItem(this.MODE);
         });
+
         this.selectedTheme = this.themes.find(theme => {
             return theme.code === localStorage.getItem(this.THEME);
         });

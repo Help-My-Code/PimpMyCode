@@ -1,5 +1,5 @@
 <p-toast></p-toast>
-<div style="padding-top: 10px;">
+<div *ngIf="token !== null && contentId !== null && userId !== null" style="padding-top: 10px;">
     <div style="padding-bottom: 10px;">
         <button pButton pRipple type="button" icon="pi pi-play" class="p-button-rounded p-button-success run-button"
                 (click)="runCode()"></button>
@@ -22,3 +22,4 @@
     <textarea class="app-ace-result" rows="5" cols="30" pInputTextarea readonly
               [value]="loading + message + codeResult"></textarea>
 </div>
+<div *ngIf="token === null || contentId === null || userId === null">Accès non autorisé</div>
