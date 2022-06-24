@@ -16,13 +16,15 @@ export class CommentListComponent implements OnInit {
             codeLinked: "for(int i = 0 ; i < 10 ; i += 1) {\n" +
                 "      print(i);\n" +
                 "    }",
-            creatorId: "1"
+            creatorId: "1",
+            roomId: "1"
         }),
         new Comment({
             commentId: 2,
             content: "ça marche sur plus ?",
             codeLinked: "for(int i = 0 ; i < 10 ; i += 1)",
-            creatorId: "2"
+            creatorId: "2",
+            roomId: "1"
         })
     ];
 
