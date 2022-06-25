@@ -21,6 +21,10 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import { LiveCodingComponent } from './components/live-coding/live-coding.component';
 import {DropdownModule} from "primeng/dropdown";
 import {RippleModule} from "primeng/ripple";
+import {InputTextareaModule} from "primeng/inputtextarea";
+import { CommentListComponent } from './components/comment-list/comment-list.component';
+import {TableModule} from "primeng/table";
+import {DialogService} from "primeng/dynamicdialog";
 
 @NgModule({
     declarations: [
@@ -32,7 +36,8 @@ import {RippleModule} from "primeng/ripple";
         ForgotPasswordComponent,
         LogoutComponent,
         ContactSupportComponent,
-        LiveCodingComponent
+        LiveCodingComponent,
+        CommentListComponent
     ],
     imports: [
         BrowserModule,
@@ -47,11 +52,14 @@ import {RippleModule} from "primeng/ripple";
         AutoCompleteModule,
         DropdownModule,
         FormsModule,
-        RippleModule
+        RippleModule,
+        InputTextareaModule,
+        TableModule
     ],
     providers: [
         HttpClient,
-        MessageService
+        MessageService,
+        DialogService
     ],
     bootstrap: [AppComponent]
 })

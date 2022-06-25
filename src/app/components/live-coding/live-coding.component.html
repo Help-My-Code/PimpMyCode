@@ -1,41 +1,24 @@
-<div style="padding-top: 10px">
-  <div style="padding-bottom: 10px">
-    <button
-      pButton
-      pRipple
-      type="button"
-      icon="pi pi-play"
-      class="p-button-rounded p-button-success run-button"
-      (click)="runCode()"
-    ></button>
-    Language :
-    <p-dropdown
-      [options]="languages"
-      [(ngModel)]="selectedLanguage"
-      optionLabel="name"
-      style="margin-right: 20px"
-      (onClick)="setAceMode()"
-    ></p-dropdown>
-    Theme :
-    <p-dropdown
-      [options]="themes"
-      [(ngModel)]="selectedTheme"
-      optionLabel="name"
-      (onClick)="setAceTheme()"
-    ></p-dropdown>
-    <button
-      pButton
-      pRipple
-      type="button"
-      label="Add a comment"
-      class="p-button-secondary add-comment-button"
-      (click)="addComment()"
-    ></button>
-  </div>
-  <div class="app-ace-editor" #editor></div>
-  <div class="app-ace-result">
-    {{ loading }}
-    {{ message }}
-    {{ codeResult }}
-  </div>
+<p-toast></p-toast>
+<div style="padding-top: 10px;">
+    <div style="padding-bottom: 10px;">
+        <button pButton pRipple type="button" icon="pi pi-play" class="p-button-rounded p-button-success run-button"
+                (click)="runCode()"></button>
+        Language :
+        <p-dropdown [options]="languages" [(ngModel)]="selectedLanguage" optionLabel="name"
+                    (onClick)="setAceMode()"></p-dropdown>
+        Theme :
+        <p-dropdown [options]="themes" [(ngModel)]="selectedTheme" optionLabel="name"
+                    (onClick)="setAceTheme()"></p-dropdown>
+        <button pButton pRipple type="button" label="Add a comment"
+                class="p-button-secondary add-comment-button"
+                (click)="addComment()"></button>
+        <button pButton pRipple type="button" label="See comments"
+                class="p-button-secondary add-comment-button"
+                (click)="printComments()"></button>
+    </div>
+    <div class="app-ace-editor"
+         #editor
+    ></div>
+    <textarea class="app-ace-result" rows="5" cols="30" pInputTextarea readonly
+              [value]="loading + message + codeResult"></textarea>
 </div>

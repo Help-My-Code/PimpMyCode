@@ -2,15 +2,18 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  OnInit,
+  OnDestroy,
   ViewChild,
 } from "@angular/core";
 import * as ace from "ace-builds";
 import { Ace } from "ace-builds";
 import { catchError } from "rxjs/operators";
 import { throwError } from "rxjs";
-import { UserService } from "../../services/user.service";
 import { ExecuteProgramService } from "../../services/execute-program.service";
+import { DialogService, DynamicDialogRef } from "primeng/dynamicdialog";
+import { MessageService } from "primeng/api";
+import { Comment } from "../../models/comment.model";
+import { CommentListComponent } from "../comment-list/comment-list.component";
 
 interface DropDownElement {
   name: string;
@@ -22,7 +25,7 @@ interface DropDownElement {
   templateUrl: "./live-coding.component.html",
   styleUrls: ["./live-coding.component.css"],
 })
-export class LiveCodingComponent implements AfterViewInit {
+export class LiveCodingComponent implements AfterViewInit, OnDestroy {
   private readonly MODE = "MODE";
   private readonly THEME = "THEME";
   private socket: WebSocket;
@@ -35,12 +38,18 @@ export class LiveCodingComponent implements AfterViewInit {
 
   private aceEditor: Ace.Editor;
 
-  message: any;
+  message = "";
   loading = "";
 
   codeResult = "";
 
-  constructor(private executeProgramService: ExecuteProgramService) {
+  ref: DynamicDialogRef;
+
+  constructor(
+    private executeProgramService: ExecuteProgramService,
+    public dialogService: DialogService,
+    private messageService: MessageService
+  ) {
     this.languages = [
       { name: "Dart", code: "dart" },
       { name: "Python", code: "python" },
@@ -155,9 +164,31 @@ export class LiveCodingComponent implements AfterViewInit {
     this.aceEditor.setTheme("ace/theme/" + this.selectedTheme.code);
   }
 
-  //TODO ajouter un commentaire sur certaines lignes de code
   addComment() {
+    if (this.aceEditor.getSelectedText().trim() === "") {
+      this.messageService.add({
+        severity: "warn",
+        summary: "Impossible to add a comment",
+        detail: "Please select some code to add a comment",
+      });
+    }
+    //TODO ajouter un commentaire sur certaines lignes de code
     console.log(this.aceEditor.getSelectedText());
+  }
+
+  printComments() {
+    this.ref = this.dialogService.open(CommentListComponent, {
+      header: "Comments",
+      width: "90%",
+      contentStyle: { "max-height": "500px", overflow: "auto" },
+      baseZIndex: 10000,
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.ref) {
+      this.ref.close();
+    }
   }
 
   runCode() {
