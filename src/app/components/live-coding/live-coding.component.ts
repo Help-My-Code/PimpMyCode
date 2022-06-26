@@ -29,6 +29,7 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
   private readonly MODE = "MODE";
   private readonly THEME = "THEME";
   private socket: WebSocket;
+  private deltas: Array<Ace.Delta> = new Array();
 
   readonly languages: DropDownElement[];
   readonly themes: DropDownElement[];
@@ -111,7 +112,12 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
       console.log("Connected");
     };
     this.socket.onmessage = (event) => {
-      console.log(event.data);
+      // console.dir(event);
+      // console.log(this.aceEditor.getValue());
+      if (this.aceEditor.getValue() != event.data) {
+        this.aceEditor.setValue(event.data);
+        // this.aceEditor.session.setValue(event.data);
+      }
     };
     this.socket.onclose = () => {
       console.log("Disconnected");
@@ -119,6 +125,13 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
     this.socket.onerror = (error) => {
       console.error(error);
     };
+
+    setInterval(() => {
+      if (this.deltas.length > 0) {
+        this.socket.send("/code_updates " + JSON.stringify(this.deltas));
+        this.deltas = [];
+      }
+    }, 400);
   }
 
   ngAfterViewInit(): void {
@@ -148,9 +161,9 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
     } else {
       this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
     }
-    this.aceEditor.on("change", () => {
-      console.log(this.aceEditor.getValue());
-      this.socket.send("/code_update " + this.aceEditor.getValue());
+    this.aceEditor.on("change", (delta) => {
+      console.log("delta: ", delta);
+      this.deltas.push(delta);
     });
   }
 
