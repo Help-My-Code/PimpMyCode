@@ -1,9 +1,12 @@
-<p-table [value]="comments" responsiveLayout="scroll" [paginator]="true" [rows]="5" [responsive]="true">
+{{message}}
+{{loading}}
+<div *ngIf="loading !== ''" style="text-align: center">
+    <p-progressSpinner></p-progressSpinner>
+</div>
+<p-table [value]="comments" responsiveLayout="scroll" [paginator]="true" [rows]="5" [responsive]="true">}}
     <ng-template pTemplate="header">
         <tr>
-            <th pSortableColumn="commentId">Creator
-                <p-sortIcon field="commentId"></p-sortIcon>
-            </th>
+            <th>Creator</th>
             <th>Content</th>
             <th>Code</th>
             <th style="width:7em"></th>
@@ -11,11 +14,11 @@
     </ng-template>
     <ng-template pTemplate="body" let-comment>
         <tr>
-            <td>{{comment.commentId}}</td>
+            <td>{{comment.creator.lastname}} {{comment.creator.firstname}}</td>
             <td>{{comment.content}}</td>
             <td>
                 <textarea class="app-ace-result" rows="5" cols="30" pInputTextarea readonly
-                          [value]="comment.codeLinked"></textarea>
+                          [value]="comment.code_linked"></textarea>
             </td>
             <td>
                 <button type="button" style="margin-right: 5px" pButton icon="pi pi-pencil"

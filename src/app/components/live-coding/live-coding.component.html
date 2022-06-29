@@ -9,9 +9,11 @@
         Theme :
         <p-dropdown [options]="themes" [(ngModel)]="selectedTheme" optionLabel="name"
                     (onClick)="setAceTheme()"></p-dropdown>
-        <button pButton pRipple type="button" label="Add a comment"
-                class="p-button-secondary add-comment-button"
-                (click)="addComment()"></button>
+        <app-comment-creation class="p-button-secondary add-comment-button"
+                [code]="aceEditor ? (aceEditor.getSelectedText() ? aceEditor.getSelectedText() : '') : ''"
+                [userId]="userId"
+                [roomId]="roomId"
+        ></app-comment-creation>
         <button pButton pRipple type="button" label="See comments"
                 class="p-button-secondary add-comment-button"
                 (click)="printComments()"></button>

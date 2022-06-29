@@ -1,6 +1,10 @@
 import {Component, OnInit} from '@angular/core';
 import {Comment} from "../../models/comment.model";
 import {DynamicDialogConfig, DynamicDialogRef} from "primeng/dynamicdialog";
+import {CommentService} from "../../services/comment.service";
+import {catchError} from "rxjs/operators";
+import {throwError} from "rxjs";
+import {RoomService} from "../../services/room.service";
 
 @Component({
     selector: 'app-comment-list',
@@ -9,33 +13,75 @@ import {DynamicDialogConfig, DynamicDialogRef} from "primeng/dynamicdialog";
 })
 export class CommentListComponent implements OnInit {
 
-    comments: Comment[] = [
-        new Comment({
-            commentId: 1,
-            content: "C'est bien il n'y a pas de boucle infinie",
-            codeLinked: "for(int i = 0 ; i < 10 ; i += 1) {\n" +
-                "      print(i);\n" +
-                "    }",
-            creatorId: "1",
-            roomId: "1"
-        }),
-        new Comment({
-            commentId: 2,
-            content: "ça marche sur plus ?",
-            codeLinked: "for(int i = 0 ; i < 10 ; i += 1)",
-            creatorId: "2",
-            roomId: "1"
-        })
-    ];
+    roomId = "";
+    private contentId: any;
+
+    comments: Comment[];
+    message = "";
+    loading = "";
 
     constructor(
-        //private commentService: CommentService,
-        public ref: DynamicDialogRef, public config: DynamicDialogConfig) {
+        private commentService: CommentService,
+        private roomService: RoomService,
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig) {
     }
 
     ngOnInit() {
-        //TODO récupérer les commentaires existants
-        //this.commentService.getCommentsSmall().then(comments => this.comments = comments);
+        this.initRoomId();
+    }
+
+    private initRoomId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        this.contentId = urlParams.get('content');
+        this.roomService.getByContentId(this.contentId)
+            .pipe(catchError(err => {
+                if (err.status) {
+                    this.loading = "";
+                    this.message = err.statusText;
+                }
+                return throwError(err);
+            }))
+            .subscribe((result) => {
+                this.loading = "";
+                const returnedData: any = result;
+                const jsondata = JSON.parse(returnedData._body);
+                if (!returnedData.ok) {
+                    this.message = returnedData.statusText;
+                    return;
+                } else if (jsondata.room) {
+                    this.roomId = jsondata.room.id
+                    this.initComments();
+                } else {
+                    this.message = "An error has occurred";
+                }
+            });
+    }
+
+    private initComments() {
+        this.message = "";
+        this.loading = "Charging...";
+        this.commentService.getCommentsOfRoom(this.roomId)
+            .pipe(catchError(err => {
+                if (err.status) {
+                    this.loading = "";
+                    this.message = err.statusText;
+                }
+                return throwError(err);
+            }))
+            .subscribe((result) => {
+                this.loading = "";
+                const returnedData: any = result;
+                const jsondata = JSON.parse(returnedData._body);
+                if (!returnedData.ok) {
+                    this.message = returnedData.statusText;
+                    return;
+                } else if (jsondata.comments) {
+                    this.comments = jsondata.comments
+                } else {
+                    this.message = "An error has occurred";
+                }
+            });
     }
 
     updateComment(comment: Comment) {
@@ -47,5 +93,4 @@ export class CommentListComponent implements OnInit {
         //TODO
         this.ref.close(comment);
     }
-
 }

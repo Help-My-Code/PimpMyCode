@@ -1,0 +1,11 @@
+<p-button (click)="showBasicDialog()" icon="pi pi-add" label="Add a comment"></p-button>
+
+<p-dialog header="Add a comment" [(visible)]="displayAddComment" [style]="{width: '50vw'}">
+            <span class="p-float-label">
+                <textarea id="float-input" rows="5" cols="50" [(ngModel)]="comment" pInputTextarea></textarea>
+                <label for="float-input">Comment</label>
+            </span>
+    <button pButton pRipple type="button" label="Add a comment"
+            class="p-button-secondary add-comment-button"
+            (click)="addComment()"></button>
+</p-dialog>

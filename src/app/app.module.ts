@@ -19,13 +19,17 @@ import {InputTextareaModule} from "primeng/inputtextarea";
 import { CommentListComponent } from './components/comment-list/comment-list.component';
 import {TableModule} from "primeng/table";
 import {DialogService} from "primeng/dynamicdialog";
+import {ProgressSpinnerModule} from "primeng/progressspinner";
+import { CommentCreationComponent } from './components/comment-creation/comment-creation.component';
+import {DialogModule} from "primeng/dialog";
 
 @NgModule({
     declarations: [
         AppComponent,
         HeaderComponent,
         LiveCodingComponent,
-        CommentListComponent
+        CommentListComponent,
+        CommentCreationComponent
     ],
     imports: [
         BrowserModule,
@@ -42,7 +46,9 @@ import {DialogService} from "primeng/dynamicdialog";
         FormsModule,
         RippleModule,
         InputTextareaModule,
-        TableModule
+        TableModule,
+        ProgressSpinnerModule,
+        DialogModule
     ],
     providers: [
         HttpClient,

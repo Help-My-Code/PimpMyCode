@@ -8,6 +8,8 @@ import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
 import {MessageService} from "primeng/api";
 import {CommentListComponent} from "../comment-list/comment-list.component";
 import jwt_decode from 'jwt-decode';
+import {RoomService} from "../../services/room.service";
+import {CommentService} from "../../services/comment.service";
 
 interface DropDownElement {
     name: string,
@@ -31,22 +33,23 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
     selectedLanguage: DropDownElement;
     selectedTheme: DropDownElement;
 
-    private aceEditor: Ace.Editor;
+    aceEditor: Ace.Editor;
 
     message = "";
     loading = "";
 
     codeResult = "";
 
-    contentId = null;
     token = null;
+    contentId = null;
     userId = null;
+    roomId: any;
 
     ref: DynamicDialogRef;
 
     constructor(private executeProgramService: ExecuteProgramService,
                 public dialogService: DialogService,
-                private messageService: MessageService) {
+                private roomService: RoomService) {
 
         const urlParams = new URLSearchParams(window.location.search);
         this.token = urlParams.get('token');
@@ -54,10 +57,11 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
             const decoded = jwt_decode(this.token);
             this.userId = decoded['userId'];
         } catch (e) {
-            console.log(e);
+            console.log("Token invalide " + e);
         }
 
         this.contentId = urlParams.get('content');
+        this.initRoomId();
 
         this.languages = [
             {name: 'Dart', code: 'dart'},
@@ -123,7 +127,7 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
             "basePath",
             "https://unpkg.com/ace-builds@1.4.12/src-noconflict"
         );
-        this.aceEditor = ace.edit(this.editor.nativeElement)
+        this.aceEditor = ace.edit(this.editor.nativeElement);
         this.aceEditor.session.setValue("void main() {\n" +
             "    print('Hello world !');\n" +
             "    for(int i = 0 ; i < 10 ; i += 1) {\n" +
@@ -155,16 +159,30 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
         this.aceEditor.setTheme("ace/theme/" + this.selectedTheme.code);
     }
 
-    addComment() {
-        if (this.aceEditor.getSelectedText().trim() === "") {
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'Impossible to add a comment',
-                detail: 'Please select some code to add a comment'
+    private initRoomId() {
+        const urlParams = new URLSearchParams(window.location.search);
+        this.contentId = urlParams.get('content');
+        this.roomService.getByContentId(this.contentId)
+            .pipe(catchError(err => {
+                if (err.status) {
+                    this.loading = "";
+                    this.message = err.statusText;
+                }
+                return throwError(err);
+            }))
+            .subscribe((result) => {
+                this.loading = "";
+                const returnedData: any = result;
+                const jsondata = JSON.parse(returnedData._body);
+                if (!returnedData.ok) {
+                    this.message = returnedData.statusText;
+                    return;
+                } else if (jsondata.room) {
+                    this.roomId = jsondata.room.id
+                } else {
+                    this.message = "An error has occurred";
+                }
             });
-        }
-        //TODO ajouter un commentaire sur certaines lignes de code
-        console.log(this.aceEditor.getSelectedText())
     }
 
     printComments() {
@@ -172,7 +190,7 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
             header: 'Comments',
             width: '90%',
             contentStyle: {"max-height": "500px", "overflow": "auto"},
-            baseZIndex: 10000
+            baseZIndex: 10000,
         });
     }
 
