@@ -26,7 +26,7 @@ export class CommentCreationComponent implements OnInit {
     ngOnInit(): void {
     }
 
-    showBasicDialog() {
+    showAddCommentDialog() {
         if (this.code.trim() === "") {
             this.messageService.add({
                 severity: 'warn',
