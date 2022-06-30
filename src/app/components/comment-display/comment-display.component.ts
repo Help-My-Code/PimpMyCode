@@ -16,77 +16,48 @@ export class CommentDisplayComponent implements OnInit {
   displayComments: boolean;
 
   comments: Comment[];
-  message = "";
-  loading = "";
 
-  private contentId: any;
-
-  @Input() roomId;
+  @Input() roomId = "";
 
   constructor(private commentService: CommentService,
-              private roomService: RoomService,
               private messageService: MessageService) {
   }
 
   ngOnInit(): void {
-    this.initRoomId();
-  }
-
-  private initRoomId() {
-    const urlParams = new URLSearchParams(window.location.search);
-    this.contentId = urlParams.get('content');
-    this.roomService.getByContentId(this.contentId)
-        .pipe(catchError(err => {
-          if (err.status) {
-            this.loading = "";
-            this.message = err.statusText;
-          }
-          return throwError(err);
-        }))
-        .subscribe((result) => {
-          this.loading = "";
-          const returnedData: any = result;
-          const jsondata = JSON.parse(returnedData._body);
-          if (!returnedData.ok) {
-            this.message = returnedData.statusText;
-            return;
-          } else if (jsondata.room) {
-            this.roomId = jsondata.room.id
-            this.initComments();
-          } else {
-            this.message = "An error has occurred";
-          }
-        });
   }
 
   private initComments() {
-    this.message = "";
-    this.loading = "Charging...";
     this.commentService.getCommentsOfRoom(this.roomId)
         .pipe(catchError(err => {
           if (err.status) {
-            this.loading = "";
-            this.message = err.statusText;
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'An error has occurred'
+            });
+            console.log(err.statusText);
           }
           return throwError(err);
         }))
         .subscribe((result) => {
-          this.loading = "";
           const returnedData: any = result;
           const jsondata = JSON.parse(returnedData._body);
-          if (!returnedData.ok) {
-            this.message = returnedData.statusText;
-            return;
-          } else if (jsondata.comments) {
+          if (jsondata.comments) {
             this.comments = jsondata.comments
           } else {
-            this.message = "An error has occurred";
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'An error has occurred'
+            });
+            console.log(returnedData.statusText);
           }
         });
   }
 
   showAddCommentDialog() {
       this.displayComments = true;
+      this.initComments();
   }
 
   updateComment(comment: Comment) {

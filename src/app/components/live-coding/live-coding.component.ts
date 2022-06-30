@@ -181,7 +181,7 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
                     this.message = returnedData.statusText;
                     return;
                 } else if (jsondata.room) {
-                    this.roomId = jsondata.room.id
+                    this.roomId = jsondata.room.id;
                 } else {
                     this.message = "An error has occurred";
                 }
