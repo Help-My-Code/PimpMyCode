@@ -16,20 +16,20 @@ import { LiveCodingComponent } from './components/live-coding/live-coding.compon
 import {DropdownModule} from "primeng/dropdown";
 import {RippleModule} from "primeng/ripple";
 import {InputTextareaModule} from "primeng/inputtextarea";
-import { CommentListComponent } from './components/comment-list/comment-list.component';
 import {TableModule} from "primeng/table";
 import {DialogService} from "primeng/dynamicdialog";
 import {ProgressSpinnerModule} from "primeng/progressspinner";
 import { CommentCreationComponent } from './components/comment-creation/comment-creation.component';
 import {DialogModule} from "primeng/dialog";
+import { CommentDisplayComponent } from './components/comment-display/comment-display.component';
 
 @NgModule({
     declarations: [
         AppComponent,
         HeaderComponent,
         LiveCodingComponent,
-        CommentListComponent,
-        CommentCreationComponent
+        CommentCreationComponent,
+        CommentDisplayComponent
     ],
     imports: [
         BrowserModule,

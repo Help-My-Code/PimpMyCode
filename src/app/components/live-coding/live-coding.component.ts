@@ -5,11 +5,8 @@ import {catchError} from "rxjs/operators";
 import {throwError} from "rxjs";
 import {ExecuteProgramService} from "../../services/execute-program.service";
 import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
-import {MessageService} from "primeng/api";
-import {CommentListComponent} from "../comment-list/comment-list.component";
 import jwt_decode from 'jwt-decode';
 import {RoomService} from "../../services/room.service";
-import {CommentService} from "../../services/comment.service";
 
 interface DropDownElement {
     name: string,
@@ -149,6 +146,12 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
         });
     }
 
+    ngOnDestroy() {
+        if (this.ref) {
+            this.ref.close();
+        }
+    }
+
     setAceMode() {
         localStorage.setItem(this.MODE, this.selectedLanguage.code);
         this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
@@ -183,21 +186,6 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
                     this.message = "An error has occurred";
                 }
             });
-    }
-
-    printComments() {
-        this.ref = this.dialogService.open(CommentListComponent, {
-            header: 'Comments',
-            width: '90%',
-            contentStyle: {"max-height": "500px", "overflow": "auto"},
-            baseZIndex: 10000,
-        });
-    }
-
-    ngOnDestroy() {
-        if (this.ref) {
-            this.ref.close();
-        }
     }
 
     runCode() {
