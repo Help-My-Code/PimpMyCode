@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild,} from "@angular/core";
 import * as ace from "ace-builds";
 import {Ace} from "ace-builds";
 import {catchError} from "rxjs/operators";
@@ -7,22 +7,22 @@ import {ExecuteProgramService} from "../../services/execute-program.service";
 import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
 import jwt_decode from 'jwt-decode';
 import {RoomService} from "../../services/room.service";
+import {MessageService} from "primeng/api";
 
 interface DropDownElement {
-    name: string,
-    code: string
+    name: string;
+    code: string;
 }
 
 @Component({
-    selector: 'app-live-coding',
-    templateUrl: './live-coding.component.html',
-    styleUrls: ['./live-coding.component.css']
+    selector: "app-live-coding",
+    templateUrl: "./live-coding.component.html",
+    styleUrls: ["./live-coding.component.css"],
 })
-
 export class LiveCodingComponent implements AfterViewInit, OnDestroy {
-
-    private readonly MODE = 'MODE';
-    private readonly THEME = 'THEME';
+    private readonly MODE = "MODE";
+    private readonly THEME = "THEME";
+    private socket: WebSocket;
 
     readonly languages: DropDownElement[];
     readonly themes: DropDownElement[];
@@ -37,16 +37,19 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
 
     codeResult = "";
 
+    ref: DynamicDialogRef;
+
+    @ViewChild("editor") private editor: ElementRef<HTMLElement>;
+
     token = null;
     contentId = null;
     userId = null;
     roomId: any;
 
-    ref: DynamicDialogRef;
-
     constructor(private executeProgramService: ExecuteProgramService,
                 public dialogService: DialogService,
-                private roomService: RoomService) {
+                private roomService: RoomService,
+                private messageService: MessageService) {
 
         const urlParams = new URLSearchParams(window.location.search);
         this.token = urlParams.get('token');
@@ -116,7 +119,21 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    @ViewChild("editor") private editor: ElementRef<HTMLElement>;
+    ngOnInit() {
+        this.socket = new WebSocket("ws://localhost:8080/ws/room_id");
+        this.socket.onopen = () => {
+            console.log("Connected");
+        };
+        this.socket.onmessage = (event) => {
+            console.log(event.data);
+        };
+        this.socket.onclose = () => {
+            console.log("Disconnected");
+        };
+        this.socket.onerror = (error) => {
+            console.error(error);
+        };
+    }
 
     ngAfterViewInit(): void {
         ace.config.set("fontSize", "14px");
@@ -125,24 +142,29 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
             "https://unpkg.com/ace-builds@1.4.12/src-noconflict"
         );
         this.aceEditor = ace.edit(this.editor.nativeElement);
-        this.aceEditor.session.setValue("void main() {\n" +
+        this.aceEditor.session.setValue(
+            "void main() {\n" +
             "    print('Hello world !');\n" +
             "    for(int i = 0 ; i < 10 ; i += 1) {\n" +
             "      print(i);\n" +
             "    }\n" +
-            "}");
+            "}"
+        );
         if (localStorage.getItem(this.THEME)) {
             this.aceEditor.setTheme("ace/theme/" + localStorage.getItem(this.THEME));
         } else {
             this.aceEditor.setTheme("ace/theme/" + this.selectedTheme.code);
         }
         if (localStorage.getItem(this.MODE)) {
-            this.aceEditor.session.setMode("ace/mode/" + localStorage.getItem(this.MODE));
+            this.aceEditor.session.setMode(
+                "ace/mode/" + localStorage.getItem(this.MODE)
+            );
         } else {
             this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
         }
         this.aceEditor.on("change", () => {
             console.log(this.aceEditor.getValue());
+            this.socket.send("/code_update " + this.aceEditor.getValue());
         });
     }
 
