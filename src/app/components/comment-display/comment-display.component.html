@@ -18,14 +18,27 @@
         <ng-template pTemplate="body" let-comment>
             <tr>
                 <td>{{comment.creator.lastname}} {{comment.creator.firstname}}</td>
-                <td>{{comment.content}}</td>
+                <td>
+                    <div *ngIf="updatedContentId === comment.id;else other_content">
+                        <span class="p-float-label">
+                            <textarea id="float-input" rows="5" cols="20" [(ngModel)]="comment.content" pInputTextarea></textarea>
+                            <label for="float-input">Comment</label>
+                        </span>
+                        <button pButton pRipple type="button" label="Update comment"
+                                class="p-button-secondary comment-button"
+                                (click)="updateComment(comment)"></button>
+                    </div>
+                    <ng-template #other_content>
+                        {{comment.content}}
+                    </ng-template>
+                </td>
                 <td>
                 <textarea class="app-ace-result" rows="5" cols="30" pInputTextarea readonly
                           [value]="comment.code_linked"></textarea>
                 </td>
                 <td>
                     <button type="button" style="margin-right: 5px" pButton icon="pi pi-pencil"
-                            (click)="updateComment(comment)"></button>
+                            (click)="displayUpdateComment(comment)"></button>
                     <button type="button" class="p-button-danger" pButton icon="pi pi-trash"
                             (click)="deleteComment(comment)"></button>
                 </td>

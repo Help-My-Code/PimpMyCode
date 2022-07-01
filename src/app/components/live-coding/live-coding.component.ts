@@ -48,8 +48,7 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
 
     constructor(private executeProgramService: ExecuteProgramService,
                 public dialogService: DialogService,
-                private roomService: RoomService,
-                private messageService: MessageService) {
+                private roomService: RoomService) {
 
         const urlParams = new URLSearchParams(window.location.search);
         this.token = urlParams.get('token');

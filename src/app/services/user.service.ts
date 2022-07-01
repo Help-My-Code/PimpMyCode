@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {config} from '../../config/pimpmycode.config';
-import {UserModel} from '../models/user.model';
+import {User} from '../models/user';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Http} from "@angular/http";
 
@@ -14,14 +14,14 @@ export class UserService {
     constructor(private http: Http, private httpClient: HttpClient) {
     }
 
-    login(userModel: UserModel) {
+    login(userModel: User) {
         return this.http.post(config.URL + "/auth/login", {
             mail: userModel.email,
             password: userModel.password
         });
     }
 
-    register(data: UserModel) {
+    register(data: User) {
         return this.http.post(config.URL + "/auth/subscribe", {
             mail: data.email,
             password: data.password,
@@ -31,7 +31,7 @@ export class UserService {
         })
     }
 
-    getUserByMail(data: UserModel) {
+    getUserByMail(data: User) {
         return this.http.get(config.URL + "/auth/forgot-password", {
             params: {
                 mail: data.email

@@ -64,7 +64,7 @@ export class CommentCreationComponent implements OnInit {
                         this.messageService.add({
                             severity: 'success',
                             summary: 'Comment published',
-                            detail: 'The comment is published'
+                            detail: 'The comment has been published'
                         });
                         this.displayAddComment = false;
                         this.comment = "";
