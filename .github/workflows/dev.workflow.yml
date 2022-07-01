@@ -1,0 +1,80 @@
+on:
+  push:
+    branches: [feat/k8s]
+  pull_request:
+    branches: [feat/k8s]
+
+env:
+  DEV_DOCKER_HOST: rg.fr-par.scw.cloud
+  DEV_DOCKER_REGISTRY: angular-pimp-my-code-dev
+  DEV_DOCKER_REGISTRY_PASSWORD: bb95aaea-7a54-43d3-bec8-a47fe204bd73
+  DEV_VERSION: 0.0.0
+  K8S_MASTER_HOST_IP: 45.147.98.195
+  K8S_MASTER_PASSWORD: qFm31SOnNH
+  K8S_MASTER_USERNAME: root
+  PROD_DOCKER_HOST: rg.fr-par.scw.cloud
+  PROD_DOCKER_REGISTRY:
+  PROD_DOCKER_REGISTRY_PASSWORD: bb95aaea-7a54-43d3-bec8-a47fe204bd73
+  PROD_VERSION: 0.0.0
+  PROJECT_NAME: angular-pimp-my-code
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
+
+  push_to_registry:
+    name: push_to_registry
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Build
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Cloud Coding Registry
+        uses: docker/login-action@v1
+        with:
+          registry: $DEV_DOCKER_HOST/$DEV_DOCKER_REGISTRY
+          username: nologin
+          password: $DEV_DOCKER_REGISTRY_PASSWORD
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: $DEV_DOCKER_HOST/$DEV_DOCKER_REGISTRY/angular-pimp-my-code-snapshot-$DEV_VERSION:latest
+
+  deploy:
+    name: deploy
+    needs: push_to_registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: appleboy/ssh-action@master
+        with:
+          host: '$K8S_MASTER_HOST_IP'
+          username: '$K8S_MASTER_USERNAME'
+          password: '$K8S_MASTER_PASSWORD'
+          script: cd k8s-pmc/ && git pull && helm upgrade --recreate-pods $PROJECT_NAME $PROJECT_NAME/ -f $PROJECT_NAME/values-dev.yaml
