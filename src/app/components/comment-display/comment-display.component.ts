@@ -4,7 +4,6 @@ import {MessageService} from "primeng/api";
 import {Comment} from "../../models/comment.model";
 import {catchError} from "rxjs/operators";
 import {throwError} from "rxjs";
-import {RoomService} from "../../services/room.service";
 
 @Component({
     selector: 'app-comment-display',
@@ -32,11 +31,7 @@ export class CommentDisplayComponent implements OnInit {
         this.commentService.getCommentsOfRoom(this.roomId)
             .pipe(catchError(err => {
                 if (err.status) {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'An error has occurred'
-                    });
+                    this.toastError();
                     console.log(err.statusText);
                 }
                 return throwError(err);
@@ -47,11 +42,7 @@ export class CommentDisplayComponent implements OnInit {
                 if (jsondata.comments) {
                     this.comments = jsondata.comments
                 } else {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'An error has occurred'
-                    });
+                    this.toastError();
                     console.log(returnedData.statusText);
                 }
             });
@@ -70,18 +61,13 @@ export class CommentDisplayComponent implements OnInit {
         this.commentService.updateComment(comment.id, comment.content)
             .pipe(catchError(err => {
                 if (err.status) {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'An error has occurred'
-                    });
+                    this.toastError();
                     console.log(err.statusText);
                 }
                 return throwError(err);
             }))
             .subscribe((result) => {
                 const returnedData: any = result;
-                console.log(returnedData)
                 if (returnedData.status === 200) {
                     this.messageService.add({
                         severity: 'success',
@@ -90,17 +76,42 @@ export class CommentDisplayComponent implements OnInit {
                     });
                     this.updatedContentId = "";
                 } else {
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'An error has occurred'
-                    });
+                    this.toastError();
                     console.log(returnedData.statusText);
                 }
             });
     }
 
     deleteComment(comment: Comment) {
-        //TODO
+        this.commentService.deleteComment(comment.id)
+            .pipe(catchError(err => {
+                if (err.status) {
+                    this.toastError();
+                    console.log(err.statusText);
+                }
+                return throwError(err);
+            }))
+            .subscribe((result) => {
+                const returnedData: any = result;
+                if (returnedData.status === 200) {
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Comment deleted',
+                        detail: 'The comment has been deleted'
+                    });
+                    this.displayComments = false;
+                } else {
+                    this.toastError();
+                    console.log(returnedData.statusText);
+                }
+            });
+    }
+
+    private toastError() {
+        this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'An error has occurred'
+        });
     }
 }

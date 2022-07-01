@@ -40,4 +40,12 @@ export class CommentService {
         });
     }
 
+    deleteComment(commentId: string) {
+        return this.http.delete(config.URL + this.BASE_URL + "/delete", {
+            body: {
+                commentId: commentId
+            }
+        });
+    }
+
 }

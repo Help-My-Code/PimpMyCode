@@ -19,7 +19,7 @@ interface DropDownElement {
     templateUrl: "./live-coding.component.html",
     styleUrls: ["./live-coding.component.css"],
 })
-export class LiveCodingComponent implements AfterViewInit, OnDestroy {
+export class LiveCodingComponent implements AfterViewInit {
     private readonly MODE = "MODE";
     private readonly THEME = "THEME";
     private socket: WebSocket;
@@ -36,8 +36,6 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
     loading = "";
 
     codeResult = "";
-
-    ref: DynamicDialogRef;
 
     @ViewChild("editor") private editor: ElementRef<HTMLElement>;
 
@@ -165,12 +163,6 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
             console.log(this.aceEditor.getValue());
             this.socket.send("/code_update " + this.aceEditor.getValue());
         });
-    }
-
-    ngOnDestroy() {
-        if (this.ref) {
-            this.ref.close();
-        }
     }
 
     setAceMode() {
