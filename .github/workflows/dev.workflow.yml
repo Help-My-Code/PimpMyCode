@@ -43,7 +43,7 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ${{ secrets.DEV_DOCKER_HOST }}/${{ secrets.DEV_DOCKER_REGISTRY }}
-          username: ${{ secrets.K8S_MASTER_USERNAME }}
+          username: ${{ secrets.DEV_DOCKER_USERNAME }}
           password: ${{ secrets.DEV_DOCKER_REGISTRY_PASSWORD }}
 
       - name: Build and push
