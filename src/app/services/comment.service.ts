@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {config} from '../../config/pimpmycode.config';
-import {UserModel} from '../models/user.model';
+import {User} from '../models/user';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Http} from "@angular/http";
 
@@ -30,6 +30,21 @@ export class CommentService {
             codeLinked: codeLinked,
             creatorId: creatorId,
             roomId: roomId
+        });
+    }
+
+    updateComment(commentId: string, content: string) {
+        return this.http.put(config.URL + this.BASE_URL + "/update", {
+            content: content,
+            commentId: commentId
+        });
+    }
+
+    deleteComment(commentId: string) {
+        return this.http.delete(config.URL + this.BASE_URL + "/delete", {
+            body: {
+                commentId: commentId
+            }
         });
     }
 

@@ -1,24 +1,27 @@
+import {User} from "./user";
+import {Room} from "./room";
+
 export interface IComment {
-    commentId: number;
+    id: string;
     content: string;
-    codeLinked: string;
-    creatorId: string;
-    roomId: string;
+    code_linked: string;
+    creator: User;
+    room: Room;
 }
 
 export class Comment implements IComment {
 
-    commentId: number;
+    id: string;
     content: string;
-    codeLinked: string;
-    creatorId: string;
-    roomId: string;
+    code_linked: string;
+    creator: User;
+    room: Room;
 
     constructor(properties: IComment) {
-        this.commentId = properties.commentId;
+        this.id = properties.id;
         this.content = properties.content;
-        this.codeLinked = properties.codeLinked;
-        this.creatorId = properties.creatorId;
-        this.roomId = properties.roomId;
+        this.code_linked = properties.code_linked;
+        this.creator = properties.creator;
+        this.room = properties.room;
     }
 }

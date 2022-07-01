@@ -1,13 +1,13 @@
-import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild,} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, ViewChild,} from "@angular/core";
 import * as ace from "ace-builds";
 import {Ace} from "ace-builds";
 import {catchError} from "rxjs/operators";
 import {throwError} from "rxjs";
 import {ExecuteProgramService} from "../../services/execute-program.service";
-import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
+import {DialogService} from "primeng/dynamicdialog";
 import jwt_decode from 'jwt-decode';
 import {RoomService} from "../../services/room.service";
-import {MessageService} from "primeng/api";
+import {Room} from "../../models/room";
 
 interface DropDownElement {
     name: string;
@@ -19,7 +19,7 @@ interface DropDownElement {
     templateUrl: "./live-coding.component.html",
     styleUrls: ["./live-coding.component.css"],
 })
-export class LiveCodingComponent implements AfterViewInit, OnDestroy {
+export class LiveCodingComponent implements AfterViewInit {
     private readonly MODE = "MODE";
     private readonly THEME = "THEME";
     private socket: WebSocket;
@@ -37,19 +37,16 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
 
     codeResult = "";
 
-    ref: DynamicDialogRef;
-
     @ViewChild("editor") private editor: ElementRef<HTMLElement>;
 
     token = null;
     contentId = null;
     userId = null;
-    roomId: any;
+    room: Room;
 
     constructor(private executeProgramService: ExecuteProgramService,
                 public dialogService: DialogService,
-                private roomService: RoomService,
-                private messageService: MessageService) {
+                private roomService: RoomService) {
 
         const urlParams = new URLSearchParams(window.location.search);
         this.token = urlParams.get('token');
@@ -168,12 +165,6 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
         });
     }
 
-    ngOnDestroy() {
-        if (this.ref) {
-            this.ref.close();
-        }
-    }
-
     setAceMode() {
         localStorage.setItem(this.MODE, this.selectedLanguage.code);
         this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
@@ -203,7 +194,7 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
                     this.message = returnedData.statusText;
                     return;
                 } else if (jsondata.room) {
-                    this.roomId = jsondata.room.id;
+                    this.room = jsondata.room;
                 } else {
                     this.message = "An error has occurred";
                 }
