@@ -3,21 +3,6 @@ on:
     branches: [feat/k8s]
   pull_request:
     branches: [feat/k8s]
-
-env:
-  DEV_DOCKER_HOST: rg.fr-par.scw.cloud
-  DEV_DOCKER_REGISTRY: angular-pimp-my-code-dev
-  DEV_DOCKER_REGISTRY_PASSWORD: bb95aaea-7a54-43d3-bec8-a47fe204bd73
-  DEV_VERSION: 0.0.0
-  K8S_MASTER_HOST_IP: 45.147.98.195
-  K8S_MASTER_PASSWORD: qFm31SOnNH
-  K8S_MASTER_USERNAME: root
-  PROD_DOCKER_HOST: rg.fr-par.scw.cloud
-  PROD_DOCKER_REGISTRY: angular-pimp-my-code
-  PROD_DOCKER_REGISTRY_PASSWORD: bb95aaea-7a54-43d3-bec8-a47fe204bd73
-  PROD_VERSION: 0.0.0
-  PROJECT_NAME: angular-pimp-my-code
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -55,26 +40,26 @@ jobs:
       - name: Login to Cloud Coding Registry
         uses: docker/login-action@v1
         with:
-          registry: "$DEV_DOCKER_HOST/$DEV_DOCKER_REGISTRY"
-          username: nologin
-          password: "$DEV_DOCKER_REGISTRY_PASSWORD"
+          registry: ${{ secrets.DEV_DOCKER_HOST }}/${{ secrets.DEV_DOCKER_REGISTRY }}
+          username: ${{ secrets.K8S_MASTER_USERNAME }}
+          password: ${{ secrets.DEV_DOCKER_REGISTRY_PASSWORD }}
 
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: "$DEV_DOCKER_HOST/$DEV_DOCKER_REGISTRY/angular-pimp-my-code-snapshot-$DEV_VERSION:latest"
+          tags: ${{ secrets.DEV_DOCKER_HOST }}/${{ secrets.DEV_DOCKER_REGISTRY }}/angular-pimp-my-code-snapshot-${{ secrets.DEV_VERSION }}:latest
 
-#  deploy:
-#    name: deploy
-#    needs: push_to_registry
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v1
-#      - uses: appleboy/ssh-action@master
-#        with:
-#          host: '$K8S_MASTER_HOST_IP'
-#          username: '$K8S_MASTER_USERNAME'
-#          password: '$K8S_MASTER_PASSWORD'
-#          script: cd k8s-pmc/ && git pull && helm upgrade --recreate-pods $PROJECT_NAME $PROJECT_NAME/ -f $PROJECT_NAME/values-dev.yaml
+  deploy:
+    name: deploy
+    needs: push_to_registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: appleboy/ssh-action@master
+        with:
+          host: '${{ secrets.K8S_MASTER_HOST_IP }}'
+          username: '${{ secrets.K8S_MASTER_USERNAME }}'
+          password: '${{ secrets.K8S_MASTER_PASSWORD }}'
+          script: cd k8s-pmc/ && git pull && helm upgrade --recreate-pods ${{ secrets.PROJECT_NAME }} ${{ secrets.PROJECT_NAME }}/ -f ${{ secrets.PROJECT_NAME }}/values-dev.yaml
