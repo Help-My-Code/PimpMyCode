@@ -13,7 +13,7 @@ env:
   K8S_MASTER_PASSWORD: qFm31SOnNH
   K8S_MASTER_USERNAME: root
   PROD_DOCKER_HOST: rg.fr-par.scw.cloud
-  PROD_DOCKER_REGISTRY:
+  PROD_DOCKER_REGISTRY: angular-pimp-my-code
   PROD_DOCKER_REGISTRY_PASSWORD: bb95aaea-7a54-43d3-bec8-a47fe204bd73
   PROD_VERSION: 0.0.0
   PROJECT_NAME: angular-pimp-my-code
@@ -55,16 +55,16 @@ jobs:
       - name: Login to Cloud Coding Registry
         uses: docker/login-action@v1
         with:
-          registry: $DEV_DOCKER_HOST/$DEV_DOCKER_REGISTRY
+          registry: "$DEV_DOCKER_HOST/$DEV_DOCKER_REGISTRY"
           username: nologin
-          password: $DEV_DOCKER_REGISTRY_PASSWORD
+          password: "$DEV_DOCKER_REGISTRY_PASSWORD"
 
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: $DEV_DOCKER_HOST/$DEV_DOCKER_REGISTRY/angular-pimp-my-code-snapshot-$DEV_VERSION:latest
+          tags: "$DEV_DOCKER_HOST/$DEV_DOCKER_REGISTRY/angular-pimp-my-code-snapshot-$DEV_VERSION:latest"
 
 #  deploy:
 #    name: deploy
