@@ -12,10 +12,10 @@
         <app-comment-creation class="comment-button"
                               [code]="aceEditor ? (aceEditor.getSelectedText() ? aceEditor.getSelectedText() : '') : ''"
                               [userId]="userId"
-                              [roomId]="roomId"
+                              [room]="room"
         ></app-comment-creation>
         <app-comment-display class="comment-button"
-                             [roomId]="roomId"></app-comment-display>
+                             [room]="room"></app-comment-display>
     </div>
     <div class="app-ace-editor"
          #editor

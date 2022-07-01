@@ -1,13 +1,13 @@
-import {AfterViewInit, Component, ElementRef, OnDestroy, ViewChild,} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, ViewChild,} from "@angular/core";
 import * as ace from "ace-builds";
 import {Ace} from "ace-builds";
 import {catchError} from "rxjs/operators";
 import {throwError} from "rxjs";
 import {ExecuteProgramService} from "../../services/execute-program.service";
-import {DialogService, DynamicDialogRef} from "primeng/dynamicdialog";
+import {DialogService} from "primeng/dynamicdialog";
 import jwt_decode from 'jwt-decode';
 import {RoomService} from "../../services/room.service";
-import {MessageService} from "primeng/api";
+import {Room} from "../../models/room";
 
 interface DropDownElement {
     name: string;
@@ -42,7 +42,7 @@ export class LiveCodingComponent implements AfterViewInit {
     token = null;
     contentId = null;
     userId = null;
-    roomId: any;
+    room: Room;
 
     constructor(private executeProgramService: ExecuteProgramService,
                 public dialogService: DialogService,
@@ -194,7 +194,7 @@ export class LiveCodingComponent implements AfterViewInit {
                     this.message = returnedData.statusText;
                     return;
                 } else if (jsondata.room) {
-                    this.roomId = jsondata.room.id;
+                    this.room = jsondata.room;
                 } else {
                     this.message = "An error has occurred";
                 }

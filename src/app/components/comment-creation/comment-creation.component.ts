@@ -3,6 +3,7 @@ import {catchError} from "rxjs/operators";
 import {throwError} from "rxjs";
 import {MessageService} from "primeng/api";
 import {CommentService} from "../../services/comment.service";
+import {Room} from "../../models/room";
 
 @Component({
     selector: 'app-comment-creation',
@@ -17,7 +18,7 @@ export class CommentCreationComponent implements OnInit {
 
     @Input() code = '';
     @Input() userId;
-    @Input() roomId;
+    @Input() room: Room;
 
     constructor(private commentService: CommentService,
                 private messageService: MessageService) {
@@ -46,7 +47,7 @@ export class CommentCreationComponent implements OnInit {
                 detail: 'Please add a comment in the field'
             });
         } else {
-            this.commentService.addComment(this.comment, this.code, this.userId, this.roomId)
+            this.commentService.addComment(this.comment, this.code, this.userId, this.room.id)
                 .pipe(catchError(err => {
                     if (err.status) {
                         this.messageService.add({

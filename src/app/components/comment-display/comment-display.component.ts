@@ -4,6 +4,7 @@ import {MessageService} from "primeng/api";
 import {Comment} from "../../models/comment.model";
 import {catchError} from "rxjs/operators";
 import {throwError} from "rxjs";
+import {Room} from "../../models/room";
 
 @Component({
     selector: 'app-comment-display',
@@ -16,7 +17,7 @@ export class CommentDisplayComponent implements OnInit {
 
     comments: Comment[];
 
-    @Input() roomId = "";
+    @Input() room: Room;
 
     updatedContentId = "";
 
@@ -28,7 +29,7 @@ export class CommentDisplayComponent implements OnInit {
     }
 
     private initComments() {
-        this.commentService.getCommentsOfRoom(this.roomId)
+        this.commentService.getCommentsOfRoom(this.room.id)
             .pipe(catchError(err => {
                 if (err.status) {
                     this.toastError();
