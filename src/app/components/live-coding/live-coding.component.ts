@@ -8,6 +8,7 @@ import { DialogService } from "primeng/dynamicdialog";
 import jwt_decode from "jwt-decode";
 import { RoomService } from "../../services/room.service";
 import { Room } from "../../models/room";
+import sha1 from "js-sha1";
 
 interface DropDownElement {
   name: string;
@@ -23,6 +24,7 @@ export class LiveCodingComponent implements AfterViewInit {
   private readonly MODE = "MODE";
   private readonly THEME = "THEME";
   private socket: WebSocket;
+  private deltas: Map<string, Ace.Delta>;
 
   readonly languages: DropDownElement[];
   readonly themes: DropDownElement[];
@@ -49,6 +51,7 @@ export class LiveCodingComponent implements AfterViewInit {
     public dialogService: DialogService,
     private roomService: RoomService
   ) {
+    this.deltas = new Map();
     const urlParams = new URLSearchParams(window.location.search);
     this.token = urlParams.get("token");
     try {
@@ -123,8 +126,14 @@ export class LiveCodingComponent implements AfterViewInit {
       console.log("Connected");
     };
     this.socket.onmessage = (event) => {
-      console.log(event.data);
       const change = JSON.parse(event.data);
+      const deltaHash = sha1(event.data);
+      console.log("event recieve: ", event.data);
+      console.log("recieve: " + deltaHash);
+      if (this.deltas.has(deltaHash)) {
+        return;
+      }
+      this.deltas.set(deltaHash, change[0]);
       this.aceEditor.getSession().getDocument().applyDeltas(change);
     };
     this.socket.onclose = () => {
@@ -162,9 +171,14 @@ export class LiveCodingComponent implements AfterViewInit {
     } else {
       this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
     }
-    this.aceEditor.on("change", (delta: Ace.Delta) => {
-      console.log(delta);
-      this.socket.send("/code_updates " + JSON.stringify([delta]));
+    this.aceEditor.on("change", (delta: any) => {
+      console.log("delta: ", delta);
+      delete delta.id;
+      const deltaAsString = JSON.stringify([delta]);
+      const deltaHash = sha1(deltaAsString);
+      console.log("send: " + deltaHash);
+      this.deltas.set(deltaHash, delta);
+      this.socket.send("/code_updates " + deltaAsString);
     });
   }
 
