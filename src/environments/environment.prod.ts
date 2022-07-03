@@ -5,5 +5,3 @@ export const environment = {
   bucket_slug: '',
   URL: 'http://backend.dev.pimp-my-code.xyz',
 };
-
-
