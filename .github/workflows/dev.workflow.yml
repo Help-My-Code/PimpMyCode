@@ -47,7 +47,7 @@ jobs:
       - name: Build the tagged Docker image
         run: "docker build \
         -f Dockerfile . \
-        --build-arg BACKEND=${{ secrets.DEV_BACKEND }} \
+        --build-arg NAMESPACE=dev \
         --tag ${{ secrets.DEV_DOCKER_HOST }}/${{ secrets.DEV_DOCKER_REGISTRY }}/${{ secrets.PROJECT_NAME }}-snapshot-${{ secrets.DEV_VERSION }}:latest"
       - name: Push the tagged Docker image
         run: docker push ${{ secrets.DEV_DOCKER_HOST }}/${{ secrets.DEV_DOCKER_REGISTRY }}/${{ secrets.PROJECT_NAME }}-snapshot-${{ secrets.DEV_VERSION }}:latest

@@ -2,16 +2,13 @@
 # Stage 1
 FROM node:14-alpine as build-step
 
-ARG BACKEND
-
-ENV \
-BACKEND=${BACKEND}
-
+ARG NAMESPACE
 
 WORKDIR /app
 COPY . .
+
 RUN npm ci
-RUN npm run build --prod
+RUN npm run build:${NAMESPACE}
 
 # Stage 2
 FROM nginx:alpine

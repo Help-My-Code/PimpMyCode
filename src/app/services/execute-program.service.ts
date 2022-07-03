@@ -13,7 +13,7 @@ export class ExecuteProgramService {
   }
 
   execute(language: string, stdin: string) {
-    return this.http.post(`${process.env.BACKEND}` + this.BASE_URL + '/execute', {
+    return this.http.post(environment.URL + this.BASE_URL + "/execute", {
       language: language,
       stdin: stdin
     });

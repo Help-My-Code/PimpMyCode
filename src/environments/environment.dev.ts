@@ -3,7 +3,7 @@ export const environment = {
   read_key: '',
   write_key: '',
   bucket_slug: '',
-  URL: 'http://backend.pimp-my-code.xyz',
+  URL: 'http://backend.dev.pimp-my-code.xyz',
 };
 
 
