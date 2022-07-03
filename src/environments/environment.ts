@@ -1,3 +1,4 @@
 export const environment = {
-  production: false
+  production: false,
+  // URL: 'https://backend.dev.pimp-my-code.xyz',
 };
