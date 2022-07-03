@@ -1,6 +1,13 @@
 
 # Stage 1
 FROM node:14-alpine as build-step
+
+ARG BACKEND
+
+ENV \
+BACKEND=${BACKEND} \
+
+
 WORKDIR /app
 COPY . .
 RUN npm install

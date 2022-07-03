@@ -3,5 +3,5 @@ export const config = {
   read_key: '',
   write_key: '',
   bucket_slug: '',
-  URL: 'http://localhost:3000',
+  URL: 'https://backend.dev.pimp-my-code.xyz',
 };
