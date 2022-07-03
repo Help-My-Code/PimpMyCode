@@ -13,7 +13,7 @@ export class ExecuteProgramService {
   }
 
   execute(language: string, stdin: string) {
-    return this.http.post("http://backend.dev.pimp-my-code.xyz" + this.BASE_URL + "/execute", {
+    return this.http.post('${process.env.BACKEND}' + this.BASE_URL + '/execute', {
       language: language,
       stdin: stdin
     });
