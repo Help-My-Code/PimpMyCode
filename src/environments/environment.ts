@@ -5,4 +5,3 @@ export const environment = {
   bucket_slug: '',
   URL: 'http://localhost:3000',
 };
-
