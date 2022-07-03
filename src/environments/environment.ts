@@ -1,4 +1,7 @@
 export const environment = {
   production: false,
-  URL: 'http://backend.dev.pimp-my-code.xyz',
+  read_key: '',
+  write_key: '',
+  bucket_slug: '',
+  URL: 'http://localhost:3000',
 };
