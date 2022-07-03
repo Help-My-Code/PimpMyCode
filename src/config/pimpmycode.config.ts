@@ -3,7 +3,7 @@ export const config = {
   read_key: '',
   write_key: '',
   bucket_slug: '',
-  URL: '${process.env.BACKEND}',
+  URL: 'http://backend.dev.pimp-my-code.xyz',
 };
 
 
