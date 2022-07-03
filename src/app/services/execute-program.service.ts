@@ -1,6 +1,5 @@
 import {Injectable} from '@angular/core';
 import {Http} from "@angular/http";
-import {config} from "../../config/pimpmycode.config";
 import {environment} from '../../environments/environment';
 
 @Injectable({

@@ -1,7 +1,4 @@
 import {Injectable} from '@angular/core';
-import {config} from '../../config/pimpmycode.config';
-import {User} from '../models/user';
-import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {Http} from "@angular/http";
 import {environment} from '../../environments/environment';
 
