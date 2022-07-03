@@ -5,7 +5,7 @@ FROM node:14-alpine as build-step
 ARG BACKEND
 
 ENV \
-BACKEND=${BACKEND} \
+BACKEND=${BACKEND}
 
 
 WORKDIR /app
