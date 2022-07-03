@@ -1,13 +1,13 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from "@angular/core";
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from "@angular/core";
 import * as ace from "ace-builds";
-import { Ace } from "ace-builds";
-import { catchError } from "rxjs/operators";
-import { throwError } from "rxjs";
-import { ExecuteProgramService } from "../../services/execute-program.service";
-import { DialogService } from "primeng/dynamicdialog";
+import {Ace} from "ace-builds";
+import {catchError} from "rxjs/operators";
+import {throwError} from "rxjs";
+import {ExecuteProgramService} from "../../services/execute-program.service";
+import {DialogService} from "primeng/dynamicdialog";
 import jwt_decode from "jwt-decode";
-import { RoomService } from "../../services/room.service";
-import { Room } from "../../models/room";
+import {RoomService} from "../../services/room.service";
+import {Room} from "../../models/room";
 import sha1 from "js-sha1";
 
 interface DropDownElement {
@@ -20,7 +20,7 @@ interface DropDownElement {
   templateUrl: "./live-coding.component.html",
   styleUrls: ["./live-coding.component.css"],
 })
-export class LiveCodingComponent implements AfterViewInit {
+export class LiveCodingComponent implements OnInit, AfterViewInit {
   private readonly MODE = "MODE";
   private readonly THEME = "THEME";
   private socket: WebSocket;
@@ -62,7 +62,7 @@ export class LiveCodingComponent implements AfterViewInit {
     }
 
     this.contentId = urlParams.get("content");
-    this.initRoomId();
+    this.initRoom();
 
     this.languages = [
       { name: "Dart", code: "dart" },
@@ -151,14 +151,6 @@ export class LiveCodingComponent implements AfterViewInit {
       "https://unpkg.com/ace-builds@1.4.12/src-noconflict"
     );
     this.aceEditor = ace.edit(this.editor.nativeElement);
-    this.aceEditor.session.setValue(
-      "void main() {\n" +
-        "    print('Hello world !');\n" +
-        "    for(int i = 0 ; i < 10 ; i += 1) {\n" +
-        "      print(i);\n" +
-        "    }\n" +
-        "}"
-    );
     if (localStorage.getItem(this.THEME)) {
       this.aceEditor.setTheme("ace/theme/" + localStorage.getItem(this.THEME));
     } else {
@@ -192,7 +184,7 @@ export class LiveCodingComponent implements AfterViewInit {
     this.aceEditor.setTheme("ace/theme/" + this.selectedTheme.code);
   }
 
-  private initRoomId() {
+  private initRoom() {
     const urlParams = new URLSearchParams(window.location.search);
     this.contentId = urlParams.get("content");
     this.roomService
@@ -215,10 +207,15 @@ export class LiveCodingComponent implements AfterViewInit {
           return;
         } else if (jsondata.room) {
           this.room = jsondata.room;
+          this.initCode();
         } else {
           this.message = "An error has occurred";
         }
       });
+  }
+
+  private initCode() {
+    this.aceEditor.session.setValue(this.room.program.stdin);
   }
 
   runCode() {
