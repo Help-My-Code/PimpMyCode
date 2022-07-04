@@ -224,7 +224,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
     this.loading = "Code en cours d'exécution...";
     this.executeProgramService
       .execute(
-        this.selectedLanguage.code.toUpperCase(),
+        this.selectedLanguage.name.toUpperCase(),
         this.aceEditor.getValue()
       )
       .pipe(
