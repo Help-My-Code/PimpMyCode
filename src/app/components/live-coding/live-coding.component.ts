@@ -1,14 +1,21 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from "@angular/core";
 import * as ace from "ace-builds";
-import {Ace} from "ace-builds";
-import {catchError} from "rxjs/operators";
-import {throwError} from "rxjs";
-import {ExecuteProgramService} from "../../services/execute-program.service";
-import {DialogService} from "primeng/dynamicdialog";
+import { Ace } from "ace-builds";
+import { catchError } from "rxjs/operators";
+import { throwError } from "rxjs";
+import { ExecuteProgramService } from "../../services/execute-program.service";
+import { DialogService } from "primeng/dynamicdialog";
 import jwt_decode from "jwt-decode";
-import {RoomService} from "../../services/room.service";
-import {Room} from "../../models/room";
+import { RoomService } from "../../services/room.service";
+import { Room } from "../../models/room";
 import sha1 from "js-sha1";
+import { environment } from "src/environments/environment";
 
 interface DropDownElement {
   name: string;
@@ -121,7 +128,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.socket = new WebSocket("ws://localhost:8080/ws/room_id");
+    this.socket = new WebSocket(environment.websocket_url);
     this.socket.onopen = () => {
       console.log("Connected");
     };
@@ -142,13 +149,6 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
     this.socket.onerror = (error) => {
       console.error(error);
     };
-
-    setInterval(() => {
-      if (this.deltas.length > 0) {
-        this.socket.send("/code_updates " + JSON.stringify(this.deltas));
-        this.deltas = [];
-      }
-    }, 400);
   }
 
   ngAfterViewInit(): void {
@@ -173,6 +173,8 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
     this.aceEditor.on("change", (delta: any) => {
       console.log("delta: ", delta);
       delete delta.id;
+      delta["timestamp"] = Math.floor(Date.now() / 1000).toString();
+
       const deltaAsString = JSON.stringify([delta]);
       const deltaHash = sha1(deltaAsString);
       console.log("send: " + deltaHash);
