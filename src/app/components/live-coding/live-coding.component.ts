@@ -1,19 +1,14 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  OnDestroy,
-  ViewChild,
-} from "@angular/core";
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from "@angular/core";
 import * as ace from "ace-builds";
-import { Ace } from "ace-builds";
-import { catchError } from "rxjs/operators";
-import { throwError } from "rxjs";
-import { ExecuteProgramService } from "../../services/execute-program.service";
-import { DialogService, DynamicDialogRef } from "primeng/dynamicdialog";
-import { MessageService } from "primeng/api";
-import { Comment } from "../../models/comment.model";
-import { CommentListComponent } from "../comment-list/comment-list.component";
+import {Ace} from "ace-builds";
+import {catchError} from "rxjs/operators";
+import {throwError} from "rxjs";
+import {ExecuteProgramService} from "../../services/execute-program.service";
+import {DialogService} from "primeng/dynamicdialog";
+import jwt_decode from "jwt-decode";
+import {RoomService} from "../../services/room.service";
+import {Room} from "../../models/room";
+import sha1 from "js-sha1";
 
 interface DropDownElement {
   name: string;
@@ -25,11 +20,11 @@ interface DropDownElement {
   templateUrl: "./live-coding.component.html",
   styleUrls: ["./live-coding.component.css"],
 })
-export class LiveCodingComponent implements AfterViewInit, OnDestroy {
+export class LiveCodingComponent implements OnInit, AfterViewInit {
   private readonly MODE = "MODE";
   private readonly THEME = "THEME";
   private socket: WebSocket;
-  private deltas: Array<Ace.Delta> = new Array();
+  private deltas: Map<string, Ace.Delta>;
 
   readonly languages: DropDownElement[];
   readonly themes: DropDownElement[];
@@ -37,25 +32,44 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
   selectedLanguage: DropDownElement;
   selectedTheme: DropDownElement;
 
-  private aceEditor: Ace.Editor;
+  aceEditor: Ace.Editor;
 
   message = "";
   loading = "";
 
   codeResult = "";
 
-  ref: DynamicDialogRef;
+  @ViewChild("editor") private editor: ElementRef<HTMLElement>;
+
+  token = null;
+  contentId = null;
+  userId = null;
+  room: Room;
 
   constructor(
     private executeProgramService: ExecuteProgramService,
     public dialogService: DialogService,
-    private messageService: MessageService
+    private roomService: RoomService
   ) {
+    this.deltas = new Map();
+    const urlParams = new URLSearchParams(window.location.search);
+    this.token = urlParams.get("token");
+    try {
+      const decoded = jwt_decode(this.token);
+      this.userId = decoded["userId"];
+    } catch (e) {
+      console.log("Token invalide " + e);
+    }
+
+    this.contentId = urlParams.get("content");
+    this.initRoom();
+
     this.languages = [
       { name: "Dart", code: "dart" },
       { name: "Python", code: "python" },
       { name: "C", code: "ccpp" },
     ];
+
     this.themes = [
       { name: "Ambiance", code: "ambiance" },
       { name: "Chaos", code: "chaos" },
@@ -96,15 +110,15 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
       { name: "Vibrant Ink", code: "vibrant_ink" },
       { name: "Xcode", code: "xcode" },
     ];
+
     this.selectedLanguage = this.languages.find((language) => {
       return language.code === localStorage.getItem(this.MODE);
     });
+
     this.selectedTheme = this.themes.find((theme) => {
       return theme.code === localStorage.getItem(this.THEME);
     });
   }
-
-  @ViewChild("editor") private editor: ElementRef<HTMLElement>;
 
   ngOnInit() {
     this.socket = new WebSocket("ws://localhost:8080/ws/room_id");
@@ -112,12 +126,15 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
       console.log("Connected");
     };
     this.socket.onmessage = (event) => {
-      // console.dir(event);
-      // console.log(this.aceEditor.getValue());
-      if (this.aceEditor.getValue() != event.data) {
-        this.aceEditor.setValue(event.data);
-        // this.aceEditor.session.setValue(event.data);
+      const change = JSON.parse(event.data);
+      const deltaHash = sha1(event.data);
+      console.log("event recieve: ", event.data);
+      console.log("recieve: " + deltaHash);
+      if (this.deltas.has(deltaHash)) {
+        return;
       }
+      this.deltas.set(deltaHash, change[0]);
+      this.aceEditor.getSession().getDocument().applyDeltas(change);
     };
     this.socket.onclose = () => {
       console.log("Disconnected");
@@ -141,14 +158,6 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
       "https://unpkg.com/ace-builds@1.4.12/src-noconflict"
     );
     this.aceEditor = ace.edit(this.editor.nativeElement);
-    this.aceEditor.session.setValue(
-      "void main() {\n" +
-        "    print('Hello world !');\n" +
-        "    for(int i = 0 ; i < 10 ; i += 1) {\n" +
-        "      print(i);\n" +
-        "    }\n" +
-        "}"
-    );
     if (localStorage.getItem(this.THEME)) {
       this.aceEditor.setTheme("ace/theme/" + localStorage.getItem(this.THEME));
     } else {
@@ -161,9 +170,14 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
     } else {
       this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
     }
-    this.aceEditor.on("change", (delta) => {
+    this.aceEditor.on("change", (delta: any) => {
       console.log("delta: ", delta);
-      this.deltas.push(delta);
+      delete delta.id;
+      const deltaAsString = JSON.stringify([delta]);
+      const deltaHash = sha1(deltaAsString);
+      console.log("send: " + deltaHash);
+      this.deltas.set(deltaHash, delta);
+      this.socket.send("/code_updates " + deltaAsString);
     });
   }
 
@@ -177,31 +191,38 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
     this.aceEditor.setTheme("ace/theme/" + this.selectedTheme.code);
   }
 
-  addComment() {
-    if (this.aceEditor.getSelectedText().trim() === "") {
-      this.messageService.add({
-        severity: "warn",
-        summary: "Impossible to add a comment",
-        detail: "Please select some code to add a comment",
+  private initRoom() {
+    const urlParams = new URLSearchParams(window.location.search);
+    this.contentId = urlParams.get("content");
+    this.roomService
+      .getByContentId(this.contentId)
+      .pipe(
+        catchError((err) => {
+          if (err.status) {
+            this.loading = "";
+            this.message = err.statusText;
+          }
+          return throwError(err);
+        })
+      )
+      .subscribe((result) => {
+        this.loading = "";
+        const returnedData: any = result;
+        const jsondata = JSON.parse(returnedData._body);
+        if (!returnedData.ok) {
+          this.message = returnedData.statusText;
+          return;
+        } else if (jsondata.room) {
+          this.room = jsondata.room;
+          this.initCode();
+        } else {
+          this.message = "An error has occurred";
+        }
       });
-    }
-    //TODO ajouter un commentaire sur certaines lignes de code
-    console.log(this.aceEditor.getSelectedText());
   }
 
-  printComments() {
-    this.ref = this.dialogService.open(CommentListComponent, {
-      header: "Comments",
-      width: "90%",
-      contentStyle: { "max-height": "500px", overflow: "auto" },
-      baseZIndex: 10000,
-    });
-  }
-
-  ngOnDestroy() {
-    if (this.ref) {
-      this.ref.close();
-    }
+  private initCode() {
+    this.aceEditor.session.setValue(this.room.program.stdin);
   }
 
   runCode() {
@@ -210,7 +231,7 @@ export class LiveCodingComponent implements AfterViewInit, OnDestroy {
     this.loading = "Code en cours d'exécution...";
     this.executeProgramService
       .execute(
-        this.selectedLanguage.code.toUpperCase(),
+        this.selectedLanguage.name.toUpperCase(),
         this.aceEditor.getValue()
       )
       .pipe(

@@ -1,0 +1,10 @@
+.idea
+.git
+.gitignore
+.husky
+dist
+test
+node_modules
+.editorconfig
+e2e
+*.md

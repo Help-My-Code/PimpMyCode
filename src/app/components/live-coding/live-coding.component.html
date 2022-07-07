@@ -9,12 +9,13 @@
         Theme :
         <p-dropdown [options]="themes" [(ngModel)]="selectedTheme" optionLabel="name"
                     (onClick)="setAceTheme()"></p-dropdown>
-        <button pButton pRipple type="button" label="Add a comment"
-                class="p-button-secondary add-comment-button"
-                (click)="addComment()"></button>
-        <button pButton pRipple type="button" label="See comments"
-                class="p-button-secondary add-comment-button"
-                (click)="printComments()"></button>
+        <app-comment-creation class="comment-button"
+                              [code]="aceEditor ? (aceEditor.getSelectedText() ? aceEditor.getSelectedText() : '') : ''"
+                              [userId]="userId"
+                              [room]="room"
+        ></app-comment-creation>
+        <app-comment-display class="comment-button"
+                             [room]="room"></app-comment-display>
     </div>
     <div class="app-ace-editor"
          #editor
@@ -22,3 +23,4 @@
     <textarea class="app-ace-result" rows="5" cols="30" pInputTextarea readonly
               [value]="loading + message + codeResult"></textarea>
 </div>
+<!--<div *ngIf="token === null || contentId === null || userId === null">Accès non autorisé</div>-->
