@@ -133,10 +133,9 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
       console.log("Connected");
     };
     this.socket.onmessage = (event) => {
+      console.log(event);
       const change = JSON.parse(event.data);
       const deltaHash = sha1(event.data);
-      console.log("event recieve: ", event.data);
-      console.log("recieve: " + deltaHash);
       if (this.deltas.has(deltaHash)) {
         return;
       }
@@ -171,13 +170,11 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
       this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
     }
     this.aceEditor.on("change", (delta: any) => {
-      console.log("delta: ", delta);
       delete delta.id;
       delta["timestamp"] = Math.floor(Date.now() / 1000).toString();
 
       const deltaAsString = JSON.stringify([delta]);
       const deltaHash = sha1(deltaAsString);
-      console.log("send: " + deltaHash);
       this.deltas.set(deltaHash, delta);
       this.socket.send("/code_updates " + deltaAsString);
     });
@@ -228,35 +225,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   runCode() {
-    this.codeResult = "";
-    this.message = "";
-    this.loading = "Code en cours d'exécution...";
-    this.executeProgramService
-      .execute(
-        this.selectedLanguage.name.toUpperCase(),
-        this.aceEditor.getValue()
-      )
-      .pipe(
-        catchError((err) => {
-          if (err.status) {
-            this.loading = "";
-            this.message = err.statusText;
-          }
-          return throwError(err);
-        })
-      )
-      .subscribe((result) => {
-        this.loading = "";
-        const returnedData: any = result;
-        const jsondata = JSON.parse(returnedData._body);
-        if (!returnedData.ok) {
-          this.message = returnedData.statusText;
-          return;
-        } else if (jsondata.stdout) {
-          this.codeResult = jsondata.stdout;
-        } else {
-          this.message = "An error has occurred";
-        }
-      });
+      console.log("compile", this.aceEditor.session.getValue());
+      this.socket.send("/compile " + this.aceEditor.session.getValue());
   }
 }

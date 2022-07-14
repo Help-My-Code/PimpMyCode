@@ -1,0 +1,59 @@
+  .chat-box {
+  padding: 0 20px;
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  background: aliceblue;
+  border-radius: 10px;
+  border: 3px solid deepskyblue;
+}
+
+.message-box {
+  overflow: scroll;
+  height: 25rem;
+  width: 25rem;
+  opacity: 0.7;
+}
+
+.msg-wrapper {
+  text-align: right;
+}
+
+.msg-wrapper.incomming {
+  text-align: left;
+}
+
+.message {
+  border-radius: 10px 10px 0 10px;
+  border: 1px solid blue;
+  padding: 10px 40px;
+  background: salmon;
+  margin-bottom: 10px;
+  display: inline-block;
+  max-width: 100%;
+  overflow: scroll;
+}
+
+.msg-wrapper.incomming > .message {
+  background: crimson;
+  border-radius: 10px 10px 10px 0;
+}
+
+.input-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.input-box button {
+  background: blueviolet;
+  border-radius: 0 5px 5px 0;
+  border: none;
+  outline: inherit;
+}
+
+input {
+  padding: 2px;
+  width: 100%;
+  border: 1px solid grey;
+}
