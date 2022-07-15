@@ -1,4 +1,15 @@
-import { Ace } from "ace-builds";
+export interface Delta {
+    start: Point;
+    end: Point;
+    action: String;
+    lines: Array<String>;
+    timestamp: String;
+}
+
+export interface Point {
+    row: number;
+    column: number;
+}
 
 export interface User {
   user_id: string;
@@ -17,7 +28,7 @@ export class ChatMessage {
 
 export class CodeUpdateOutput {
   user: User;
-  content: Ace.Delta[];
+  content: Delta[];
 }
 
 export class CompilationEvent {

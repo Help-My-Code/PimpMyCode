@@ -98,8 +98,8 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
       const anyEvent = JSON.parse(data.data);
       if ("ChatMessage" in anyEvent) {
         // TODO
-      } else if ("CodeUpdateOutput" in anyEvent) {
-        this.handleCodeUpdate(anyEvent["CodeUpdateOutput"]);
+      } else if ("CodeUpdate" in anyEvent) {
+    this.handleCodeUpdate(anyEvent["CodeUpdate"]);
       } else if ("CompilationEvent" in anyEvent) {
         this.handleCompilationEvent(anyEvent["CompilationEvent"]);
       } else {
@@ -121,12 +121,14 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   handleCodeUpdate(change: CodeUpdateOutput) {
-    const deltaHash = sha1(change);
+    const changeAsString = JSON.stringify(change);
+    console.log(changeAsString);
+    const deltaHash = sha1(changeAsString);
     if (this.deltas.has(deltaHash)) {
       return;
     }
     this.deltas.set(deltaHash, change[0]);
-    this.aceEditor.getSession().getDocument().applyDeltas(change.content);
+    this.aceEditor.getSession().getDocument().applyDeltas(change.content as unknown as Ace.Delta[]);
   }
 
   ngAfterViewInit(): void {
