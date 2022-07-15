@@ -27,7 +27,7 @@
       class="comment-button"
       [code]="
         aceEditor
-          ? aceEditor.getSelectedText()
+          ? getCodeOfComment()
           : ''
       "
       [userId]="userId"

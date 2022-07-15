@@ -33,8 +33,7 @@
                     </ng-template>
                 </td>
                 <td>
-                <textarea class="app-ace-result" rows="5" cols="30" pInputTextarea readonly
-                          [value]="comment.code_linked"></textarea>
+                    <div [innerHTML]="comment.code_linked" class="code-displayer"></div>
                 </td>
                 <td>
                     <button type="button" style="margin-right: 5px" pButton icon="pi pi-pencil"

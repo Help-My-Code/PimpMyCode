@@ -228,4 +228,8 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
       console.log("compile", this.aceEditor.session.getValue());
       this.socket.send("/compile " + this.aceEditor.session.getValue());
   }
+
+  getCodeOfComment() {
+    return "<b>" + this.aceEditor.getSelectedText() + "</b>";
+  }
 }
