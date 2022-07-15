@@ -1,14 +1,21 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from "@angular/core";
 import * as ace from "ace-builds";
-import {Ace} from "ace-builds";
-import {catchError} from "rxjs/operators";
-import {throwError} from "rxjs";
-import {ExecuteProgramService} from "../../services/execute-program.service";
-import {DialogService} from "primeng/dynamicdialog";
+import { Ace } from "ace-builds";
+import { catchError } from "rxjs/operators";
+import { throwError } from "rxjs";
+import { ExecuteProgramService } from "../../services/execute-program.service";
+import { DialogService } from "primeng/dynamicdialog";
 import jwt_decode from "jwt-decode";
-import {RoomService} from "../../services/room.service";
-import {Room} from "../../models/room";
+import { RoomService } from "../../services/room.service";
+import { Room } from "../../models/room";
 import sha1 from "js-sha1";
+import { environment } from "src/environments/environment";
 
 interface DropDownElement {
   name: string;
@@ -121,15 +128,14 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.socket = new WebSocket("ws://localhost:8080/ws/room_id");
+    this.socket = new WebSocket(environment.websocket_url);
     this.socket.onopen = () => {
       console.log("Connected");
     };
     this.socket.onmessage = (event) => {
+      console.log(event);
       const change = JSON.parse(event.data);
       const deltaHash = sha1(event.data);
-      console.log("event recieve: ", event.data);
-      console.log("recieve: " + deltaHash);
       if (this.deltas.has(deltaHash)) {
         return;
       }
@@ -164,11 +170,11 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
       this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
     }
     this.aceEditor.on("change", (delta: any) => {
-      console.log("delta: ", delta);
       delete delta.id;
+      delta["timestamp"] = Math.floor(Date.now() / 1000).toString();
+
       const deltaAsString = JSON.stringify([delta]);
       const deltaHash = sha1(deltaAsString);
-      console.log("send: " + deltaHash);
       this.deltas.set(deltaHash, delta);
       this.socket.send("/code_updates " + deltaAsString);
     });
@@ -219,35 +225,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   runCode() {
-    this.codeResult = "";
-    this.message = "";
-    this.loading = "Code en cours d'exécution...";
-    this.executeProgramService
-      .execute(
-        this.selectedLanguage.name.toUpperCase(),
-        this.aceEditor.getValue()
-      )
-      .pipe(
-        catchError((err) => {
-          if (err.status) {
-            this.loading = "";
-            this.message = err.statusText;
-          }
-          return throwError(err);
-        })
-      )
-      .subscribe((result) => {
-        this.loading = "";
-        const returnedData: any = result;
-        const jsondata = JSON.parse(returnedData._body);
-        if (!returnedData.ok) {
-          this.message = returnedData.statusText;
-          return;
-        } else if (jsondata.stdout) {
-          this.codeResult = jsondata.stdout;
-        } else {
-          this.message = "An error has occurred";
-        }
-      });
+      console.log("compile", this.aceEditor.session.getValue());
+      this.socket.send("/compile " + this.aceEditor.session.getValue());
   }
 }

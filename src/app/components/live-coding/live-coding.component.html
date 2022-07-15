@@ -1,26 +1,51 @@
 <p-toast></p-toast>
-<div style="padding-top: 10px;">
-    <div style="padding-bottom: 10px;">
-        <button pButton pRipple type="button" icon="pi pi-play" class="p-button-rounded p-button-success run-button"
-                (click)="runCode()"></button>
-        Language :
-        <p-dropdown [options]="languages" [(ngModel)]="selectedLanguage" optionLabel="name"
-                    (onClick)="setAceMode()"></p-dropdown>
-        Theme :
-        <p-dropdown [options]="themes" [(ngModel)]="selectedTheme" optionLabel="name"
-                    (onClick)="setAceTheme()"></p-dropdown>
-        <app-comment-creation class="comment-button"
-                              [code]="aceEditor ? (aceEditor.getSelectedText() ? aceEditor.getSelectedText() : '') : ''"
-                              [userId]="userId"
-                              [room]="room"
-        ></app-comment-creation>
-        <app-comment-display class="comment-button"
-                             [room]="room"></app-comment-display>
-    </div>
-    <div class="app-ace-editor"
-         #editor
-    ></div>
-    <textarea class="app-ace-result" rows="5" cols="30" pInputTextarea readonly
-              [value]="loading + message + codeResult"></textarea>
+<div style="padding-top: 10px">
+  <div style="padding-bottom: 10px">
+    <button
+      pButton
+      pRipple
+      type="button"
+      icon="pi pi-play"
+      class="p-button-rounded p-button-success run-button"
+      (click)="runCode()"
+    ></button>
+    Language :
+    <p-dropdown
+      [options]="languages"
+      [(ngModel)]="selectedLanguage"
+      optionLabel="name"
+      (onClick)="setAceMode()"
+    ></p-dropdown>
+    Theme :
+    <p-dropdown
+      [options]="themes"
+      [(ngModel)]="selectedTheme"
+      optionLabel="name"
+      (onClick)="setAceTheme()"
+    ></p-dropdown>
+    <app-comment-creation
+      class="comment-button"
+      [code]="
+        aceEditor
+          ? aceEditor.getSelectedText()
+          : ''
+      "
+      [userId]="userId"
+      [room]="room"
+    ></app-comment-creation>
+    <app-comment-display
+      class="comment-button"
+      [room]="room"
+    ></app-comment-display>
+  </div>
+  <div class="app-ace-editor" #editor></div>
+  <textarea
+    class="app-ace-result"
+    rows="5"
+    cols="30"
+    pInputTextarea
+    readonly
+    [value]="loading + message + codeResult"
+  ></textarea>
 </div>
 <!--<div *ngIf="token === null || contentId === null || userId === null">Accès non autorisé</div>-->
