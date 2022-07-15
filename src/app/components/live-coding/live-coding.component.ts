@@ -229,7 +229,37 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
       this.socket.send("/compile " + this.aceEditor.session.getValue());
   }
 
-  getCodeOfComment() {
-    return "<b>" + this.aceEditor.getSelectedText() + "</b>";
-  }
+    getCodeOfComment() {
+        if (this.aceEditor.getSelectedText().trim() === '') {
+            return ''
+        }
+        let selectionRange = this.aceEditor.getSelectionRange();
+        let rowStart = selectionRange.start.row;
+        let columnStart = selectionRange.start.column;
+        let rowEnd = selectionRange.end.row;
+        let columnEnd = selectionRange.end.column;
+
+        let numberOfLines = this.aceEditor.session.getLength();
+
+        const ADDED_LINES_BEFORE = 2;
+        const ADDED_LINES_AFTER = 3;
+
+        let rangeStart = this.aceEditor.getSelectionRange();
+        rangeStart.start.row = rowStart - ADDED_LINES_BEFORE > 0 ? rowStart - ADDED_LINES_BEFORE : 0;
+        rangeStart.start.column = 0;
+        rangeStart.end.row = rowStart;
+        rangeStart.end.column = columnStart;
+
+        let rangeEnd = this.aceEditor.getSelectionRange();
+        rangeEnd.start.row = rowEnd;
+        rangeEnd.start.column = columnEnd;
+        rangeEnd.end.row = rowEnd + ADDED_LINES_AFTER < numberOfLines ? rowEnd + ADDED_LINES_AFTER : numberOfLines;
+        /* on reste sur la column à 0 à la fin car on a pris 3 lignes en plus pour ne pas avoir
+           à récupérer la dernière column de la ligne */
+        rangeEnd.end.column = 0;
+
+        return this.aceEditor.session.getTextRange(rangeStart) +
+            "<b>" + this.aceEditor.getSelectedText() + "</b>" +
+            this.aceEditor.session.getTextRange(rangeEnd);
+    }
 }
