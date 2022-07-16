@@ -89,7 +89,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.socket = new WebSocket(environment.websocket_url);
+    this.socket = new WebSocket(environment.websocket_url + `?user_id=${this.userId}&room_id=${this.room.id}`);
     this.socket.onopen = () => {
       console.log("Connected");
     };
@@ -99,7 +99,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
       if ("ChatMessage" in anyEvent) {
         // TODO
       } else if ("CodeUpdate" in anyEvent) {
-    this.handleCodeUpdate(anyEvent["CodeUpdate"]);
+        this.handleCodeUpdate(anyEvent["CodeUpdate"]);
       } else if ("CompilationEvent" in anyEvent) {
         this.handleCompilationEvent(anyEvent["CompilationEvent"]);
       } else {
@@ -153,7 +153,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
     this.aceEditor.on("change", (delta: any) => {
       delete delta.id;
       delta["timestamp"] = Math.floor(Date.now() / 1000).toString();
-
+// todo add user inside code update struct
       const deltaAsString = JSON.stringify([delta]);
       const deltaHash = sha1(deltaAsString);
       this.deltas.set(deltaHash, delta);
@@ -205,6 +205,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   runCode() {
-    this.socket.send("/compile " + this.aceEditor.session.getValue());
+    const code = this.aceEditor.session.getValue();
+    this.socket.send(`/compile ${this.languages} ${code}`);
   }
 }
