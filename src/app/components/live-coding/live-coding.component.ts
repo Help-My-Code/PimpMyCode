@@ -77,7 +77,8 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
     }
 
     this.contentId = urlParams.get("content");
-    this.initRoom();
+    
+    // this.initRoom();
 
     this.selectedLanguage = this.languages.find((language) => {
       return language.code === localStorage.getItem(this.MODE);
@@ -89,12 +90,11 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.socket = new WebSocket(environment.websocket_url + `?user_id=${this.userId}&room_id=${this.room.id}`);
+    this.socket = new WebSocket(environment.websocket_url + `user/${this.userId}/room/${this.contentId}`);
     this.socket.onopen = () => {
       console.log("Connected");
     };
     this.socket.onmessage = (data) => {
-      console.log(data);
       const anyEvent = JSON.parse(data.data);
       if ("ChatMessage" in anyEvent) {
         // TODO
@@ -102,6 +102,8 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
         this.handleCodeUpdate(anyEvent["CodeUpdate"]);
       } else if ("CompilationEvent" in anyEvent) {
         this.handleCompilationEvent(anyEvent["CompilationEvent"]);
+      } else if ("Init" in anyEvent) {
+        this.handleInit(anyEvent["Init"]);
       } else {
         console.error("unhandled event", anyEvent);
       }
@@ -114,6 +116,13 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
     };
   }
 
+  handleInit(init: { [x: string]: CodeUpdateOutput; }) {
+    // TODO message
+    console.log(init);
+    this.handleCodeUpdate(init["code_updates"])
+  }
+  
+
   handleCompilationEvent(change: CompilationEvent) {
     // todo make a switch and refacto the running button
     console.log(change);
@@ -121,14 +130,16 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   handleCodeUpdate(change: CodeUpdateOutput) {
-    const changeAsString = JSON.stringify(change);
-    console.log(changeAsString);
-    const deltaHash = sha1(changeAsString);
-    if (this.deltas.has(deltaHash)) {
-      return;
+    for (const update of change.content) {
+        const changeAsString = JSON.stringify(update); 
+        const hash = sha1(changeAsString);
+        if (this.deltas.has(hash)) {
+            continue;
+        }
+        this.deltas.set(hash, update);
+
+        this.aceEditor.getSession().getDocument().applyDelta(update as unknown as Ace.Delta);
     }
-    this.deltas.set(deltaHash, change[0]);
-    this.aceEditor.getSession().getDocument().applyDeltas(change.content as unknown as Ace.Delta[]);
   }
 
   ngAfterViewInit(): void {
@@ -153,7 +164,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
     this.aceEditor.on("change", (delta: any) => {
       delete delta.id;
       delta["timestamp"] = Math.floor(Date.now() / 1000).toString();
-// todo add user inside code update struct
+        // todo add user inside code update struct
       const deltaAsString = JSON.stringify([delta]);
       const deltaHash = sha1(deltaAsString);
       this.deltas.set(deltaHash, delta);
@@ -205,7 +216,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   runCode() {
-    const code = this.aceEditor.session.getValue();
-    this.socket.send(`/compile ${this.languages} ${code}`);
+    const code = this.aceEditor.session.getValue().toString();
+    this.socket.send(`/compile ${this.selectedLanguage.code.toUpperCase()} ${code}`);
   }
 }

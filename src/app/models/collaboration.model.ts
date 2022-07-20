@@ -1,9 +1,9 @@
 export interface Delta {
     start: Point;
     end: Point;
-    action: String;
-    lines: Array<String>;
-    timestamp: String;
+    action: 'insert' | 'remove';
+    lines: Array<string>;
+    timestamp: string;
 }
 
 export interface Point {
