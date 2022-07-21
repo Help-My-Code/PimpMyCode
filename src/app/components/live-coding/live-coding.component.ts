@@ -102,8 +102,6 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
         this.handleCodeUpdate(anyEvent["CodeUpdate"]);
       } else if ("CompilationEvent" in anyEvent) {
         this.handleCompilationEvent(anyEvent["CompilationEvent"]);
-      } else if ("Init" in anyEvent) {
-        this.handleInit(anyEvent["Init"]);
       } else {
         console.error("unhandled event", anyEvent);
       }
@@ -116,12 +114,6 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
     };
   }
 
-  handleInit(init: { [x: string]: CodeUpdateOutput; }) {
-    // TODO message
-    console.log(init);
-    this.handleCodeUpdate(init["code_updates"])
-  }
-  
 
   handleCompilationEvent(change: CompilationEvent) {
     // todo make a switch and refacto the running button
@@ -131,7 +123,8 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
 
   handleCodeUpdate(change: CodeUpdateOutput) {
     for (const update of change.content) {
-        const changeAsString = JSON.stringify(update); 
+        console.log(update);
+        const changeAsString = JSON.stringify([update]); 
         const hash = sha1(changeAsString);
         if (this.deltas.has(hash)) {
             continue;
@@ -167,6 +160,9 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
         // todo add user inside code update struct
       const deltaAsString = JSON.stringify([delta]);
       const deltaHash = sha1(deltaAsString);
+      if (this.deltas.has(deltaHash)) {
+        return;
+      }
       this.deltas.set(deltaHash, delta);
       this.socket.send("/code_updates " + deltaAsString);
     });
