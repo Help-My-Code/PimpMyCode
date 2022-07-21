@@ -58,6 +58,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   contentId = null;
   userId = null;
   room: Room;
+  private lock = false;
 
   constructor(
     private executeProgramService: ExecuteProgramService,
@@ -122,17 +123,17 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   handleCodeUpdate(change: CodeUpdateOutput) {
+    this.lock = true;
     for (const update of change.content) {
         console.log(update);
-        const changeAsString = JSON.stringify([update]); 
-        const hash = sha1(changeAsString);
-        if (this.deltas.has(hash)) {
+        if (this.deltas.has(update["hash"])) {
             continue;
         }
-        this.deltas.set(hash, update);
+        this.deltas.set(update["hash"], update);
 
         this.aceEditor.getSession().getDocument().applyDelta(update as unknown as Ace.Delta);
     }
+    this.lock = false;
   }
 
   ngAfterViewInit(): void {
@@ -155,16 +156,17 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
       this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
     }
     this.aceEditor.on("change", (delta: any) => {
+      if (this.lock) return;
       delete delta.id;
       delta["timestamp"] = Math.floor(Date.now() / 1000).toString();
-        // todo add user inside code update struct
       const deltaAsString = JSON.stringify([delta]);
       const deltaHash = sha1(deltaAsString);
+      delta["hash"] = deltaHash;
       if (this.deltas.has(deltaHash)) {
         return;
       }
       this.deltas.set(deltaHash, delta);
-      this.socket.send("/code_updates " + deltaAsString);
+      this.socket.send("/code_updates " + JSON.stringify([delta]));
     });
   }
 
