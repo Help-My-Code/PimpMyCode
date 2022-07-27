@@ -4,5 +4,5 @@ export const environment = {
   write_key: "",
   bucket_slug: "",
   URL: "http://backend.dev.pimp-my-code.xyz",
-  websocket_url: "ws://backend.dev.pimp-my-code.xyz/ws/",
+  websocket_url: "ws://live-backend.dev.pimp-my-code.xyz/ws/",
 };
