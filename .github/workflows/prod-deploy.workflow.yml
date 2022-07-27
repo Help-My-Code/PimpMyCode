@@ -33,7 +33,7 @@ jobs:
         --build-arg NAMESPACE=prod \
         --tag ${{ secrets.PROD_DOCKER_HOST }}/${{ secrets.PROD_DOCKER_REGISTRY }}/${{ secrets.PROJECT_NAME }}-${{ secrets.PROD_VERSION }}:latest"
       - name: Push the tagged Docker image
-        run: docker push ${{ secrets.PROD_DOCKER_HOST }}/${{ secrets.PROD_DOCKER_REGISTRY }}/${{ secrets.PROJECT_NAME }}-snapshot-${{ secrets.PROD_VERSION }}:latest
+        run: docker push ${{ secrets.PROD_DOCKER_HOST }}/${{ secrets.PROD_DOCKER_REGISTRY }}/${{ secrets.PROJECT_NAME }}-${{ secrets.PROD_VERSION }}:latest
 
   deploy:
     name: deploy
