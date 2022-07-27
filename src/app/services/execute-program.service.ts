@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Http} from "@angular/http";
-import {config} from "../../config/pimpmycode.config";
+import {environment} from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ export class ExecuteProgramService {
   }
 
   execute(language: string, stdin: string) {
-    return this.http.post(config.URL + this.BASE_URL + "/execute", {
+    return this.http.post(environment.URL + this.BASE_URL + "/execute", {
       language: language,
       stdin: stdin
     });

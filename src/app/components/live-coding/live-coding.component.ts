@@ -1,14 +1,27 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from "@angular/core";
 import * as ace from "ace-builds";
-import {Ace} from "ace-builds";
-import {catchError} from "rxjs/operators";
-import {throwError} from "rxjs";
-import {ExecuteProgramService} from "../../services/execute-program.service";
-import {DialogService} from "primeng/dynamicdialog";
+import { Ace } from "ace-builds";
+import { catchError } from "rxjs/operators";
+import { throwError } from "rxjs";
+import { ExecuteProgramService } from "../../services/execute-program.service";
+import { DialogService } from "primeng/dynamicdialog";
 import jwt_decode from "jwt-decode";
-import {RoomService} from "../../services/room.service";
-import {Room} from "../../models/room";
+import { RoomService } from "../../services/room.service";
+import { Room } from "../../models/room";
 import sha1 from "js-sha1";
+import { environment } from "src/environments/environment";
+import { themes } from "../../ace/theme";
+import { languages } from "../../ace/languages";
+import {
+  CodeUpdateOutput,
+  CompilationEvent,
+} from "../../models/collaboration.model";
 
 interface DropDownElement {
   name: string;
@@ -45,12 +58,15 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   contentId = null;
   userId = null;
   room: Room;
+  private lock = false;
 
   constructor(
     private executeProgramService: ExecuteProgramService,
     public dialogService: DialogService,
     private roomService: RoomService
   ) {
+    this.themes = themes;
+    this.languages = languages;
     this.deltas = new Map();
     const urlParams = new URLSearchParams(window.location.search);
     this.token = urlParams.get("token");
@@ -62,54 +78,8 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
     }
 
     this.contentId = urlParams.get("content");
-    this.initRoom();
 
-    this.languages = [
-      { name: "Dart", code: "dart" },
-      { name: "Python", code: "python" },
-      { name: "C", code: "ccpp" },
-    ];
-
-    this.themes = [
-      { name: "Ambiance", code: "ambiance" },
-      { name: "Chaos", code: "chaos" },
-      { name: "Chrome", code: "chrome" },
-      { name: "Clouds", code: "clouds" },
-      { name: "Clouds Midnight", code: "clouds_midnight" },
-      { name: "Crimson editor", code: "crimson_editor" },
-      { name: "Dawn", code: "dawn" },
-      { name: "Dracula", code: "dracula" },
-      { name: "Dreamweaver", code: "dreamweaver" },
-      { name: "Eclipse", code: "eclipse" },
-      { name: "Github", code: "github" },
-      { name: "Gob", code: "gob" },
-      { name: "Gruvbox", code: "gruvbox" },
-      { name: "Idle Fingers", code: "idle_fingers" },
-      { name: "Iplastic", code: "iplastic" },
-      { name: "Katzenmilch", code: "katzenmilch" },
-      { name: "Kr Theme", code: "kr_theme" },
-      { name: "Kuroir", code: "kuroir" },
-      { name: "Merbivore", code: "merbivore" },
-      { name: "Merbivore Soft", code: "merbivore_soft" },
-      { name: "Mono Industrial", code: "mono_industrial" },
-      { name: "Monokai", code: "monokai" },
-      { name: "Nord Dark", code: "nord_dark" },
-      { name: "One Dark", code: "one_dark" },
-      { name: "Pastel On Dark", code: "pastel_on_dark" },
-      { name: "solarized Dark", code: "solarized_dark" },
-      { name: "solarized Light", code: "solarized_light" },
-      { name: "Sqlserver", code: "sqlserver" },
-      { name: "Terminal", code: "terminal" },
-      { name: "Textmate", code: "textmate" },
-      { name: "Tomorrow", code: "tomorrow" },
-      { name: "Tomorrow Night", code: "tomorrow_night" },
-      { name: "Tomorrow Night Blue", code: "tomorrow_night_blue" },
-      { name: "Tomorrow Night Bright", code: "tomorrow_night_bright" },
-      { name: "Tomorrow Night Eighties", code: "tomorrow_night_eighties" },
-      { name: "Twilight", code: "twilight" },
-      { name: "Vibrant Ink", code: "vibrant_ink" },
-      { name: "Xcode", code: "xcode" },
-    ];
+    // this.initRoom();
 
     this.selectedLanguage = this.languages.find((language) => {
       return language.code === localStorage.getItem(this.MODE);
@@ -121,20 +91,23 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.socket = new WebSocket("ws://localhost:8080/ws/room_id");
+    this.socket = new WebSocket(
+      environment.websocket_url + `user/${this.userId}/room/${this.contentId}`
+    );
     this.socket.onopen = () => {
       console.log("Connected");
     };
-    this.socket.onmessage = (event) => {
-      const change = JSON.parse(event.data);
-      const deltaHash = sha1(event.data);
-      console.log("event recieve: ", event.data);
-      console.log("recieve: " + deltaHash);
-      if (this.deltas.has(deltaHash)) {
-        return;
+    this.socket.onmessage = (data) => {
+      const anyEvent = JSON.parse(data.data);
+      if ("ChatMessage" in anyEvent) {
+        // TODO
+      } else if ("CodeUpdate" in anyEvent) {
+        this.handleCodeUpdate(anyEvent["CodeUpdate"]);
+      } else if ("CompilationEvent" in anyEvent) {
+        this.handleCompilationEvent(anyEvent["CompilationEvent"]);
+      } else {
+        console.error("unhandled event", anyEvent);
       }
-      this.deltas.set(deltaHash, change[0]);
-      this.aceEditor.getSession().getDocument().applyDeltas(change);
     };
     this.socket.onclose = () => {
       console.log("Disconnected");
@@ -142,6 +115,29 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
     this.socket.onerror = (error) => {
       console.error(error);
     };
+  }
+
+  handleCompilationEvent(change: CompilationEvent) {
+    // todo make a switch and refacto the running button
+    console.log(change);
+    this.codeResult = change.stdout;
+  }
+
+  handleCodeUpdate(change: CodeUpdateOutput) {
+    this.lock = true;
+    for (const update of change.content) {
+      console.log(update);
+      if (this.deltas.has(update["hash"])) {
+        continue;
+      }
+      this.deltas.set(update["hash"], update);
+
+      this.aceEditor
+        .getSession()
+        .getDocument()
+        .applyDelta(update as unknown as Ace.Delta);
+    }
+    this.lock = false;
   }
 
   ngAfterViewInit(): void {
@@ -164,13 +160,17 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
       this.aceEditor.session.setMode("ace/mode/" + this.selectedLanguage.code);
     }
     this.aceEditor.on("change", (delta: any) => {
-      console.log("delta: ", delta);
+      if (this.lock) return;
       delete delta.id;
+      delta["timestamp"] = Math.floor(Date.now() / 1000).toString();
       const deltaAsString = JSON.stringify([delta]);
       const deltaHash = sha1(deltaAsString);
-      console.log("send: " + deltaHash);
+      delta["hash"] = deltaHash;
+      if (this.deltas.has(deltaHash)) {
+        return;
+      }
       this.deltas.set(deltaHash, delta);
-      this.socket.send("/code_updates " + deltaAsString);
+      this.socket.send("/code_updates " + JSON.stringify([delta]));
     });
   }
 
@@ -204,7 +204,6 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
         const jsondata = JSON.parse(returnedData._body);
         if (!returnedData.ok) {
           this.message = returnedData.statusText;
-          return;
         } else if (jsondata.room) {
           this.room = jsondata.room;
           this.initCode();
@@ -219,35 +218,51 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   runCode() {
-    this.codeResult = "";
-    this.message = "";
-    this.loading = "Code en cours d'exécution...";
-    this.executeProgramService
-      .execute(
-        this.selectedLanguage.name.toUpperCase(),
-        this.aceEditor.getValue()
-      )
-      .pipe(
-        catchError((err) => {
-          if (err.status) {
-            this.loading = "";
-            this.message = err.statusText;
-          }
-          return throwError(err);
-        })
-      )
-      .subscribe((result) => {
-        this.loading = "";
-        const returnedData: any = result;
-        const jsondata = JSON.parse(returnedData._body);
-        if (!returnedData.ok) {
-          this.message = returnedData.statusText;
-          return;
-        } else if (jsondata.stdout) {
-          this.codeResult = jsondata.stdout;
-        } else {
-          this.message = "An error has occurred";
-        }
-      });
+    const code = this.aceEditor.session.getValue().toString();
+    this.socket.send(
+      `/compile ${this.selectedLanguage.name.toUpperCase()} ${code}`
+    );
+  }
+
+  getCodeOfComment() {
+    if (this.aceEditor.getSelectedText().trim() === "") {
+      return "";
+    }
+    let selectionRange = this.aceEditor.getSelectionRange();
+    let rowStart = selectionRange.start.row;
+    let columnStart = selectionRange.start.column;
+    let rowEnd = selectionRange.end.row;
+    let columnEnd = selectionRange.end.column;
+
+    let numberOfLines = this.aceEditor.session.getLength();
+
+    const ADDED_LINES_BEFORE = 2;
+    const ADDED_LINES_AFTER = 3;
+
+    let rangeStart = this.aceEditor.getSelectionRange();
+    rangeStart.start.row =
+      rowStart - ADDED_LINES_BEFORE > 0 ? rowStart - ADDED_LINES_BEFORE : 0;
+    rangeStart.start.column = 0;
+    rangeStart.end.row = rowStart;
+    rangeStart.end.column = columnStart;
+
+    let rangeEnd = this.aceEditor.getSelectionRange();
+    rangeEnd.start.row = rowEnd;
+    rangeEnd.start.column = columnEnd;
+    rangeEnd.end.row =
+      rowEnd + ADDED_LINES_AFTER < numberOfLines
+        ? rowEnd + ADDED_LINES_AFTER
+        : numberOfLines;
+    /* on reste sur la column à 0 à la fin car on a pris 3 lignes en plus pour ne pas avoir
+           à récupérer la dernière column de la ligne */
+    rangeEnd.end.column = 0;
+
+    return (
+      this.aceEditor.session.getTextRange(rangeStart) +
+      "<b>" +
+      this.aceEditor.getSelectedText() +
+      "</b>" +
+      this.aceEditor.session.getTextRange(rangeEnd)
+    );
   }
 }
