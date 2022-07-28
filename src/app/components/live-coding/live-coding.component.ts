@@ -91,6 +91,7 @@ export class LiveCodingComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+    this.initRoom();
     this.socket = new WebSocket(
       environment.websocket_url + `user/${this.userId}/room/${this.contentId}`
     );
